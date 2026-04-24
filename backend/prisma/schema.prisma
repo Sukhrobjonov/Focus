@@ -1,0 +1,68 @@
+// ============================================================
+// Prisma Schema — Production Apple Bento To-Do (TWA Ready)
+// Database: SQLite
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ────────────────────────────────────────────────────────────
+// User Model
+// ────────────────────────────────────────────────────────────
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String?
+  password         String   // Hashed
+  avatar           String?
+  
+  // Rate Limiting Logic
+  taskCount24h     Int      @default(0)
+  lastTaskReset    DateTime @default(now())
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  tasks            Task[]
+  
+  @@map("users")
+}
+
+// ────────────────────────────────────────────────────────────
+// Task Model
+// ────────────────────────────────────────────────────────────
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  dueDate     DateTime?
+  
+  // Status Logic
+  isCompleted Boolean   @default(false)
+  completedAt DateTime? // Used for 24h Trashbox trigger
+  pinned      Boolean   @default(false)
+  
+  // Trashbox Logic
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime? // Used for 14d permanent deletion trigger
+  
+  // Metadata
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, isCompleted])
+  @@index([userId, isDeleted])
+  @@map("tasks")
+}

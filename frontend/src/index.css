@@ -1,0 +1,209 @@
+/* Global Modal Force Styles */
+.dark-modal-bg { 
+    background-color: #FFFFFF !important; 
+    color: #1D1D1F !important; 
+}
+
+[data-theme='dark'] .dark-modal-bg, 
+.dark .dark-modal-bg { 
+    background-color: #1C1C1E !important; 
+    color: white !important; 
+}
+
+.dark-modal-input { 
+    background-color: #F2F2F7 !important; 
+    color: #1C1C1E !important; 
+    border: 1px solid rgba(0,0,0,0.05) !important; 
+}
+
+.dark-modal-input::placeholder {
+    color: #8E8E93 !important;
+}
+
+[data-theme='dark'] .dark-modal-input, 
+.dark .dark-modal-input { 
+    background-color: #2C2C2E !important; 
+    color: white !important; 
+    border: 1px solid rgba(255,255,255,0.1) !important; 
+}
+
+[data-theme='dark'] .dark-modal-input::placeholder, 
+.dark .dark-modal-input::placeholder {
+    color: #71717A !important;
+}
+
+.dark-modal-btn-primary { 
+    background: linear-gradient(to bottom right, #007AFF, #0051A8) !important; 
+    color: white !important; 
+}
+
+.dark-modal-btn-secondary { 
+    background: rgba(0,0,0,0.05) !important; 
+    color: #86868B !important; 
+    border: 1px solid rgba(0,0,0,0.05) !important; 
+}
+
+[data-theme='dark'] .dark-modal-btn-secondary, 
+.dark .dark-modal-btn-secondary { 
+    background: rgba(255,255,255,0.05) !important; 
+    color: #A1A1AA !important; 
+    border: 1px solid rgba(255,255,255,0.1) !important; 
+}
+
+/* Force Destructive Button State */
+.btn-destructive-lock {
+    background-color: #FF3B30 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2) !important;
+}
+
+.btn-destructive-lock:hover {
+    background-color: #D7332A !important;
+}
+
+.btn-destructive-lock svg {
+    color: white !important;
+}
+
+/* Unified Bento Icon Box System */
+.bento-icon-box {
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 16px !important; /* rounded-2xl approximation for 44px */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+}
+
+[data-theme='dark'] .bento-icon-box,
+.dark .bento-icon-box {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.bento-icon-box:hover {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+    transform: scale(1.02);
+}
+
+[data-theme='dark'] .bento-icon-box:hover,
+.dark .bento-icon-box:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Apple Bento Variables & Resets */
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --bg-primary: #F5F5F7;
+  --bg-sidebar: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --border-card: rgba(0, 0, 0, 0.05);
+  --text-primary: #1D1D1F;
+  --text-secondary: #86868B;
+  --accent-blue: #007AFF;
+  --accent-red: #FF3B30;
+  --apple-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme='dark'], .dark {
+  --bg-primary: #0A0A0B;
+  --bg-sidebar: #1C1C1E;
+  --bg-card: #1C1C1E;
+  --border-card: rgba(255, 255, 255, 0.05);
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --apple-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Squircle Sync - Apple-style Soft Rectangle */
+.squircle-sync,
+.sidebar-link,
+.nav-item,
+.profile-card {
+    border-radius: 16px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover & Active States Fix */
+.sidebar-link:hover, 
+.sidebar-link-active,
+.nav-item:hover,
+.profile-card:hover {
+    border-radius: 16px !important;
+}
+
+/* Global Reset for Interactive Elements */
+input[type="text"].squircle-sync, 
+button.squircle-sync {
+    border-radius: 16px !important;
+}
+
+[data-theme='light'] .squircle-sync {
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme='dark'] .squircle-sync {
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Fixed Heights */
+.h-sync {
+    height: 44px !important; /* h-11 */
+}
+
+/* Responsive Header Dead Zone Fix (768px - 850px) */
+@media (min-width: 768px) and (max-width: 850px) {
+    .dashboard-search-container {
+        max-width: 200px !important;
+    }
+    .btn-text-responsive {
+        display: none !important;
+    }
+    .new-task-btn-responsive {
+        width: 44px !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        justify-content: center !important;
+    }
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-card);
+}
+
+/* Apple Glow Effect */
+.sidebar-glow {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+[data-theme='dark'] .sidebar-glow {
+  box-shadow: 0 0 20px rgba(0, 122, 255, 0.25);
+}
+
+/* Card Backgrounds Refinement */
+.bento-card {
+    background-color: var(--bg-card) !important;
+    border-radius: 24px !important;
+    border: 1px solid var(--border-card) !important;
+    box-shadow: var(--apple-shadow) !important;
+}
