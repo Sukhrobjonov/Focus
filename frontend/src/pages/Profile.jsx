@@ -399,7 +399,7 @@ const Profile = () => {
       />
 
       {/* Profile Container */}
-      <section className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 shadow-sm overflow-hidden">
+      <section className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 shadow-sm relative">
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0">
           <div className="w-full h-full rounded-full overflow-hidden border-4 border-white dark:border-[#1C1C1E] shadow-xl flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
             {user?.avatar ? (
@@ -425,7 +425,7 @@ const Profile = () => {
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className="absolute top-full left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 mt-3 w-56 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden py-1"
+                className="absolute top-full left-0 sm:left-auto sm:right-0 mt-3 w-52 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-[100] overflow-hidden py-1"
               >
                 <button 
                   onClick={handleUploadClick}
