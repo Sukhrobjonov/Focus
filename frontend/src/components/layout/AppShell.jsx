@@ -200,7 +200,7 @@ const AppShell = () => {
         </header>
 
         {/* Main Content Area - Fluid Spacing */}
-        <main className="flex-1 w-full max-w-[1400px] mx-auto px-5 sm:px-8 pb-32 md:pb-12 pt-4 md:pt-12">
+        <main className="flex-1 w-full max-w-[1400px] mx-auto px-5 sm:px-8 pb-32 md:pb-12 pt-6 md:pt-8">
           <Outlet />
         </main>
 

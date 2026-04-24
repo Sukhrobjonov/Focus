@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTrash, updateTask, emptyTrash, deleteTask } from '../api/tasks';
-import { Trash2, RotateCcw, AlertCircle, Inbox, Loader2, X } from 'lucide-react';
+import { Trash2, RotateCcw, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence, useAnimation, useMotionValue } from 'framer-motion';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { useAuthStore } from '../store/authStore';
 
-const SwipeableTrashItem = ({ item, onRestore, onDelete }) => {
+const SwipeableTrashItem = ({ item, onRestore, onDelete, isCompact = false }) => {
   const { theme } = useAuthStore();
   const isDarkMode = theme === 'dark';
   
@@ -72,7 +72,7 @@ const SwipeableTrashItem = ({ item, onRestore, onDelete }) => {
   }, [swipedDir]);
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden bg-transparent min-h-[64px]">
+    <div className={`relative w-full rounded-2xl overflow-hidden bg-transparent ${isCompact ? 'min-h-[52px]' : 'min-h-[64px]'}`}>
       
       {/* Background Actions: Bento-Block Layer */}
       {!isDesktop && (
@@ -111,7 +111,7 @@ const SwipeableTrashItem = ({ item, onRestore, onDelete }) => {
         animate={controls}
         style={{ x }}
         transition={{ type: "spring", stiffness: 500, damping: 35 }}
-        className={`relative z-10 flex items-center justify-between py-3 px-4 w-full min-h-[64px] border select-none transition-colors duration-200 ${
+        className={`relative z-10 flex items-center justify-between ${isCompact ? 'py-2' : 'py-3'} px-4 w-full ${isCompact ? 'min-h-[52px]' : 'min-h-[64px]'} border select-none transition-colors duration-200 ${
           isDarkMode 
             ? 'bg-[#1C1C1E] border-white/5 shadow-lg' 
             : 'bg-white border-zinc-200 shadow-sm'
@@ -152,11 +152,30 @@ const SwipeableTrashItem = ({ item, onRestore, onDelete }) => {
 const Trash = () => {
   const queryClient = useQueryClient();
   const [confirmingDelete, setConfirmingDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth < 768 ? 5 : 14);
+
+  useEffect(() => {
+    const handleResize = () => setItemsPerPage(window.innerWidth < 768 ? 5 : 14);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const { data: trashItems, isLoading } = useQuery({
     queryKey: ['trash'],
     queryFn: fetchTrash
   });
+
+  const totalPages = Math.ceil((trashItems?.length || 0) / itemsPerPage);
+  const paginatedItems = trashItems?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) || [];
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
 
   const restoreMutation = useMutation({
     mutationFn: (id) => updateTask(id, { isDeleted: false, deletedAt: null }),
@@ -190,10 +209,8 @@ const Trash = () => {
   };
 
   return (
-    <div className="w-full min-h-screen pb-32">
-      {/* Bento-Style Header Architecture */}
+    <div className="w-full">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-4 mb-6">
-         {/* Section 1: Page Identity (Stationary Anchor) */}
          <div className="flex items-center gap-3 shrink-0">
             <div className="w-12 h-12 rounded-2xl bg-apple-red flex items-center justify-center shadow-lg shadow-apple-red/20 flex-shrink-0">
                 <Trash2 size={24} color="white" />
@@ -219,43 +236,41 @@ const Trash = () => {
          )}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative overflow-hidden">
-
-
-
-
-
-
-
-
-
-
-
-
+      <div className="relative h-[340px] md:h-[460px]">
         {isLoading ? (
           <div className="py-20 text-center">
             <div className="w-10 h-10 border-4 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mx-auto mb-4" />
             <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium">Syncing trash...</p>
           </div>
-        ) : trashItems?.length > 0 ? (
-          <AnimatePresence mode="popLayout">
-            {trashItems.map((item) => (
-              <motion.div 
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: 50 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="relative"
-              >
-                <SwipeableTrashItem 
-                  item={item} 
-                  onRestore={(id) => restoreMutation.mutate(id)}
-                  onDelete={handleDeleteRequest}
+        ) : paginatedItems.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            <AnimatePresence mode="popLayout">
+              {paginatedItems.map((item) => (
+                <motion.div 
+                  key={item.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  <SwipeableTrashItem 
+                    item={item} 
+                    isCompact={true}
+                    onRestore={(id) => restoreMutation.mutate(id)}
+                    onDelete={handleDeleteRequest}
+                  />
+                </motion.div>
+              ))}
+
+              {/* Visual Placeholders for Empty Slots - Always visible for stability */}
+              {Array.from({ length: Math.max(0, itemsPerPage - paginatedItems.length) }).map((_, i) => (
+                <div 
+                  key={`empty-${i}`} 
+                  className="h-[60px] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
                 />
-              </motion.div>
-            ))}
-          </AnimatePresence>
+              ))}
+            </AnimatePresence>
+          </div>
         ) : (
           <div className="py-24 text-center space-y-4">
             <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mx-auto">
@@ -271,6 +286,41 @@ const Trash = () => {
         )}
       </div>
 
+      {totalPages > 1 && (
+        <div className="flex flex-col items-center gap-4 mt-0">
+          <div className="flex items-center gap-2 md:gap-1 bg-white/50 dark:bg-[#1C1C1E]/80 p-1.5 md:p-1 rounded-2xl backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-lg">
+            <button 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            
+            <div className="flex items-center gap-1 px-2 md:px-1">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    currentPage === i + 1 
+                      ? 'w-6 bg-apple-blue' 
+                      : 'bg-[#D2D2D7] dark:bg-[#424245]'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button 
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <ConfirmationModal 
         isOpen={!!confirmingDelete}
