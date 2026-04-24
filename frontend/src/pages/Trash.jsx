@@ -235,7 +235,7 @@ const Trash = () => {
          </div>
          
          {trashItems?.length > 0 && (
-           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
+           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center flex-1 sm:justify-end">
              <motion.button 
               whileHover={{ y: -1 }}
               whileTap={{ scale: 0.98 }}

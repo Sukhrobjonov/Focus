@@ -459,7 +459,7 @@ const Profile = () => {
       </section>
 
       {/* Grouped Settings Blocks */}
-      <div className="space-y-10">
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-6">
         {settingsGroups.map((group) => (
           <div key={group.title} className="space-y-3">
             <h3 className="text-[0.6875rem] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest ml-1">{group.title}</h3>
@@ -494,7 +494,7 @@ const Profile = () => {
         ))}
 
         {/* Danger Zone Block */}
-        <div className="space-y-3 pt-4">
+        <div className="space-y-3 pt-0 md:col-span-2 mt-2 md:mt-4">
           <h3 className="text-[0.6875rem] font-bold text-apple-red/60 uppercase tracking-widest ml-1">DANGER ZONE</h3>
           <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-apple-red/10 dark:border-apple-red/20 shadow-sm overflow-hidden">
              <button 

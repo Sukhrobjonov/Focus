@@ -105,8 +105,8 @@ const Tasks = () => {
             </div>
          </div>
 
-         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
-            <div className="relative w-full sm:w-80">
+         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center flex-1 sm:justify-end">
+            <div className="relative w-full sm:max-w-[16rem] lg:max-w-sm flex-1">
                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400" size={18} />
                <input 
                  type="text" 

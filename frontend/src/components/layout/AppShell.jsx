@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { LogOut, User, CheckCircle2, LayoutDashboard, ListTodo, Trash2, UserCircle, Settings, Sun, Moon } from 'lucide-react';
+import { LogOut, User, CheckCircle2, LayoutDashboard, ListTodo, Trash2, UserCircle, Settings, Sun, Moon, Plus } from 'lucide-react';
 import Button from '../ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAvatarUrl } from '../../utils/avatarHelper';
+import TaskModal from '../tasks/TaskModal';
 
 const AppShell = () => {
   const { user, logout, theme, toggleTheme } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isGlobalTaskModalOpen, setIsGlobalTaskModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -238,6 +240,21 @@ const AppShell = () => {
             );
           })}
         </nav>
+
+        {/* Global Floating Action Button (Mobile) */}
+        <motion.button 
+          onClick={() => setIsGlobalTaskModalOpen(true)}
+          className="md:hidden fixed bottom-32 right-6 w-14 h-14 bg-apple-blue rounded-[1rem] flex items-center justify-center shadow-[0_8px_30px_rgba(0,122,255,0.3)] z-[100] text-white focus:outline-none"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <Plus size={24} strokeWidth={3} />
+        </motion.button>
+
+        <TaskModal 
+          isOpen={isGlobalTaskModalOpen} 
+          onClose={() => setIsGlobalTaskModalOpen(false)} 
+        />
       </div>
     </div>
   );
