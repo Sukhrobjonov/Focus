@@ -131,8 +131,8 @@ const Dashboard = () => {
         </motion.div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <BentoCard span={2} className="relative overflow-hidden !bg-gradient-to-br !from-[#007AFF] !to-[#0051FF] rounded-[2.5rem] h-48 p-8 flex flex-col justify-between group shadow-xl shadow-blue-500/20" style={{ background: 'linear-gradient(135deg, #007AFF 0%, #0051FF 100%)' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <BentoCard className="col-span-2 relative overflow-hidden !bg-gradient-to-br !from-[#007AFF] !to-[#0051FF] rounded-[2rem] sm:rounded-[2.5rem] h-40 sm:h-48 p-6 sm:p-8 flex flex-col justify-between group shadow-xl shadow-blue-500/20" style={{ background: 'linear-gradient(135deg, #007AFF 0%, #0051FF 100%)' }}>
           <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/6 pointer-events-none opacity-20 z-0">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-white/80" style={{ width: `${i * 90}px`, height: `${i * 90}px`, opacity: 1 - (i * 0.15) }} />
@@ -141,8 +141,8 @@ const Dashboard = () => {
 
           <div className="flex justify-between items-start relative z-10">
             <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-black text-white/70 uppercase tracking-[0.25em]">Completion Rate</span>
-              <span className="text-6xl font-black text-white tracking-tighter">{progress}%</span>
+              <span className="text-[10px] sm:text-[11px] font-black text-white/70 uppercase tracking-[0.25em]">Completion Rate</span>
+              <span className="text-5xl sm:text-6xl font-black text-white tracking-tighter">{progress}%</span>
             </div>
             <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-xl flex items-center justify-center border border-white/30 shadow-inner">
               <div className="w-6 h-6 rounded-full border-[2px] border-white flex items-center justify-center">
@@ -166,7 +166,7 @@ const Dashboard = () => {
           </div>
         </BentoCard>
 
-        <BentoCard span={1} className={`${cardStyle} p-7 h-48 flex flex-col justify-between`}>
+        <BentoCard className={`col-span-1 ${cardStyle} p-5 sm:p-7 h-36 sm:h-48 flex flex-col justify-between`}>
           <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center">
             <Zap size={22} className="text-green-500" fill="currentColor" />
           </div>
@@ -176,7 +176,7 @@ const Dashboard = () => {
           </div>
         </BentoCard>
 
-        <BentoCard span={1} className={`${cardStyle} p-7 h-48 flex flex-col justify-between`}>
+        <BentoCard className={`col-span-1 ${cardStyle} p-5 sm:p-7 h-36 sm:h-48 flex flex-col justify-between`}>
           <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center">
             <Clock size={22} className="text-orange-500" />
           </div>
@@ -200,7 +200,7 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="relative h-[348px] overflow-hidden">
+        <div className="relative h-[21.75rem] overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="w-12 h-12 border-4 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mb-4" />
@@ -233,7 +233,7 @@ const Dashboard = () => {
               {Array.from({ length: Math.max(0, tasksPerPage - paginatedTasks.length) }).map((_, i) => (
                 <div 
                   key={`empty-${i}`} 
-                  className="h-[60px] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
+                  className="h-[3.75rem] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
                 />
               ))}
               </motion.div>

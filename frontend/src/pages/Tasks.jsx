@@ -27,11 +27,11 @@ const Tasks = () => {
   const [confirmingTrash, setConfirmingTrash] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [tasksPerPage, setTasksPerPage] = useState(window.innerWidth < 768 ? 5 : 14);
+  const [tasksPerPage, setTasksPerPage] = useState(window.innerWidth < 768 ? 5 : 10);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const handleResize = () => setTasksPerPage(window.innerWidth < 768 ? 5 : 14);
+    const handleResize = () => setTasksPerPage(window.innerWidth < 768 ? 5 : 10);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -126,7 +126,7 @@ const Tasks = () => {
          </div>
       </header>
 
-      <div className="relative h-[364px] md:h-[516px] overflow-hidden">
+      <div className="relative h-[22.75rem] overflow-hidden">
         {isLoading ? (
           <div className="py-20 text-center">
             <div className="w-10 h-10 border-4 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mx-auto mb-4" />
@@ -168,7 +168,7 @@ const Tasks = () => {
               {Array.from({ length: Math.max(0, tasksPerPage - paginatedTasks.length) }).map((_, i) => (
                 <div 
                   key={`empty-${i}`} 
-                  className="h-[60px] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
+                  className="h-[3.75rem] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
                 />
               ))}
               </AnimatePresence>

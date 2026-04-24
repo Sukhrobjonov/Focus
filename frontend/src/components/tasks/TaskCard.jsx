@@ -70,7 +70,7 @@ const TaskCard = ({ task, onToggle, onEdit, onTrash, isCompact = false }) => {
   }, [swipedDir]);
 
   return (
-    <div className={`relative w-full rounded-2xl overflow-hidden bg-transparent ${isCompact ? 'h-[60px]' : 'min-h-[64px]'}`}>
+    <div className={`relative w-full rounded-2xl overflow-hidden bg-transparent ${isCompact ? 'h-[3.75rem]' : 'min-h-[4rem]'}`}>
       
       {/* Background Actions: Bento-Block Layer */}
       {!isDesktop && (
@@ -109,7 +109,7 @@ const TaskCard = ({ task, onToggle, onEdit, onTrash, isCompact = false }) => {
         animate={controls}
         style={{ x }}
         transition={{ type: "spring", stiffness: 500, damping: 35 }}
-        className={`relative z-10 flex items-center justify-between ${isCompact ? 'py-2' : 'py-3'} px-4 w-full ${isCompact ? 'h-[60px]' : 'min-h-[64px]'} border select-none transition-colors duration-200 ${
+        className={`relative z-10 flex items-center justify-between ${isCompact ? 'py-2' : 'py-3'} px-4 w-full ${isCompact ? 'h-[3.75rem]' : 'min-h-[4rem]'} border select-none transition-colors duration-200 ${
           isDarkMode 
             ? 'bg-[#1C1C1E] border-white/5 shadow-lg' 
             : 'bg-white border-zinc-200 shadow-sm'
@@ -124,20 +124,20 @@ const TaskCard = ({ task, onToggle, onEdit, onTrash, isCompact = false }) => {
           </button>
           
           <div className="min-w-0 flex flex-col justify-center">
-            <h4 className={`text-[15px] font-semibold tracking-tight truncate leading-tight ${
+            <h4 className={`text-[0.9375rem] font-semibold tracking-tight truncate leading-tight ${
               task.isCompleted ? 'line-through text-[#86868B]' : 'text-[#1D1D1F] dark:text-white'
             }`}>
               {task.title}
             </h4>
             <div className="flex items-center gap-x-2 mt-1">
-              <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest ${
+              <span className={`px-2 py-0.5 rounded-md text-[0.5625rem] font-bold uppercase tracking-widest ${
                 task.priority === 'URGENT' ? 'bg-apple-red/10 text-apple-red' : 
                 task.priority === 'HIGH' ? 'bg-apple-orange/10 text-apple-orange' : 'bg-black/5 dark:bg-white/5 text-[#86868B] dark:text-[#A1A1AA]'
               }`}>
                 {task.priority}
               </span>
               {task.dueDate && (
-                <div className="flex items-center gap-1 text-[#86868B] dark:text-[#A1A1AA] text-[10px] font-medium">
+                <div className="flex items-center gap-1 text-[#86868B] dark:text-[#A1A1AA] text-[0.625rem] font-medium">
                   <Calendar size={11} />
                   {new Date(task.dueDate).toLocaleDateString()}
                 </div>

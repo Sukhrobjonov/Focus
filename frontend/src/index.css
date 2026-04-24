@@ -207,3 +207,20 @@ button.squircle-sync {
     border: 1px solid var(--border-card) !important;
     box-shadow: var(--apple-shadow) !important;
 }
+
+/* Responsive Scaling for Ultra-Wide / 2K+ Monitors */
+@media (min-width: 1536px) {
+  html {
+    font-size: 18px; /* 12.5% scale up */
+  }
+}
+@media (min-width: 1920px) {
+  html {
+    font-size: 20px; /* 25% scale up */
+  }
+}
+@media (min-width: 2560px) {
+  html {
+    font-size: 24px; /* 50% scale up */
+  }
+}

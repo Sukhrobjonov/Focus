@@ -224,7 +224,7 @@ const Profile = () => {
                <button 
                 type="button"
                 onClick={handleAvatarClick}
-                className="text-[13px] font-bold text-apple-blue uppercase tracking-widest hover:underline focus:outline-none"
+                className="text-[0.8125rem] font-bold text-apple-blue uppercase tracking-widest hover:underline focus:outline-none"
                >
                  {isUploading ? 'Processing...' : 'Change Avatar'}
                </button>
@@ -233,7 +233,7 @@ const Profile = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">First Name</label>
+                  <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">First Name</label>
                   <input 
                     type="text" 
                     value={profileData.firstName}
@@ -244,7 +244,7 @@ const Profile = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Last Name</label>
+                  <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Last Name</label>
                   <input 
                     type="text" 
                     value={profileData.lastName}
@@ -285,7 +285,7 @@ const Profile = () => {
           <form onSubmit={handleUpdatePassword} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[11px] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Current Password</label>
+                <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Current Password</label>
                 <input 
                   type="password" 
                   value={passwordData.current}
@@ -296,7 +296,7 @@ const Profile = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">New Password</label>
+                <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">New Password</label>
                 <input 
                   type="password" 
                   value={passwordData.new}
@@ -307,7 +307,7 @@ const Profile = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Confirm New Password</label>
+                <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Confirm New Password</label>
                 <input 
                   type="password" 
                   value={passwordData.confirm}
@@ -348,7 +348,7 @@ const Profile = () => {
                   <AlertCircle size={32} className="text-apple-red" />
                </div>
                <div className="text-center">
-                 <p className="text-[#86868B] dark:text-[#A1A1AA] text-[17px] font-medium leading-relaxed">
+                 <p className="text-[#86868B] dark:text-[#A1A1AA] text-[1.0625rem] font-medium leading-relaxed">
                    This action is permanent and cannot be undone. All your tasks will be lost forever.
                  </p>
                </div>
@@ -382,7 +382,7 @@ const Profile = () => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full lg:max-w-[800px] mx-auto space-y-8 sm:space-y-12 pb-20"
+      className="w-full lg:max-w-[50rem] mx-auto space-y-8 sm:space-y-12 pb-20"
     >
       <header className="space-y-2">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight dark:text-white">Settings</h1>
@@ -432,7 +432,7 @@ const Profile = () => {
                   className="w-full px-4 py-3 flex items-center gap-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
                 >
                   <Camera size={18} className="text-[#007AFF]" />
-                  <span className="text-[14px] font-bold text-[#007AFF]">Upload New Photo</span>
+                  <span className="text-[0.875rem] font-bold text-[#007AFF]">Upload New Photo</span>
                 </button>
                 
                 {user?.avatar && (
@@ -441,7 +441,7 @@ const Profile = () => {
                     className="w-full px-4 py-3 flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left border-t border-zinc-100 dark:border-white/5"
                   >
                     <Trash2 size={18} className="text-apple-red" />
-                    <span className="text-[14px] font-bold text-apple-red">Remove Current Photo</span>
+                    <span className="text-[0.875rem] font-bold text-apple-red">Remove Current Photo</span>
                   </button>
                 )}
               </motion.div>
@@ -453,7 +453,7 @@ const Profile = () => {
           <h2 className="text-2xl sm:text-3xl font-bold dark:text-white leading-tight truncate">{user?.name || 'Focus User'}</h2>
           <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium text-base sm:text-lg mt-0.5 truncate">{user?.email || 'premium@focus.app'}</p>
         </div>
-        <div className="bg-apple-blue/10 text-apple-blue px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-[13px] font-bold uppercase tracking-widest shadow-sm shrink-0 mt-2 sm:mt-0">
+        <div className="bg-apple-blue/10 text-apple-blue px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[0.6875rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest shadow-sm shrink-0 mt-2 sm:mt-0">
           Premium
         </div>
       </section>
@@ -462,7 +462,7 @@ const Profile = () => {
       <div className="space-y-10">
         {settingsGroups.map((group) => (
           <div key={group.title} className="space-y-3">
-            <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest ml-1">{group.title}</h3>
+            <h3 className="text-[0.6875rem] font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest ml-1">{group.title}</h3>
             
             {/* The Parent Container - One per Group */}
             <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/[0.05] dark:border-white/5 shadow-sm overflow-hidden">
@@ -478,7 +478,7 @@ const Profile = () => {
                     </div>
                     <div className="text-left">
                       <p className="font-bold dark:text-white leading-tight">{item.label}</p>
-                      {item.sub && <p className="text-[13px] text-[#86868B] dark:text-[#A1A1AA] font-medium mt-0.5">{item.sub}</p>}
+                      {item.sub && <p className="text-[0.8125rem] text-[#86868B] dark:text-[#A1A1AA] font-medium mt-0.5">{item.sub}</p>}
                     </div>
                   </div>
                   <ChevronRight size={16} className="text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
@@ -495,7 +495,7 @@ const Profile = () => {
 
         {/* Danger Zone Block */}
         <div className="space-y-3 pt-4">
-          <h3 className="text-[11px] font-bold text-apple-red/60 uppercase tracking-widest ml-1">DANGER ZONE</h3>
+          <h3 className="text-[0.6875rem] font-bold text-apple-red/60 uppercase tracking-widest ml-1">DANGER ZONE</h3>
           <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-apple-red/10 dark:border-apple-red/20 shadow-sm overflow-hidden">
              <button 
               onClick={() => setActiveModal('delete-account')}
@@ -507,7 +507,7 @@ const Profile = () => {
                   </div>
                   <div className="text-left">
                     <p className="font-bold text-apple-red leading-tight">Delete Account</p>
-                    <p className="text-[13px] text-apple-red/60 font-medium mt-0.5">Permanently remove all your data</p>
+                    <p className="text-[0.8125rem] text-apple-red/60 font-medium mt-0.5">Permanently remove all your data</p>
                   </div>
                 </div>
                 <ChevronRight size={16} className="text-apple-red/40" />

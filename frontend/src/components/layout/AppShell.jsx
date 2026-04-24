@@ -41,7 +41,7 @@ const AppShell = () => {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#007AFF] to-[#0051A8] flex items-center justify-center shadow-lg shadow-apple-blue/20 flex-shrink-0">
                 <CheckCircle2 size={22} color="white" strokeWidth={2.5} />
               </div>
-              <span className="hidden lg:block font-bold text-[20px] tracking-tight text-[#1D1D1F] dark:text-white">Focus</span>
+              <span className="hidden lg:block font-bold text-[1.25rem] tracking-tight text-[#1D1D1F] dark:text-white">Focus</span>
             </motion.div>
 
             <motion.button
@@ -89,7 +89,7 @@ const AppShell = () => {
                     />
                   )}
                   <item.icon size={20} className="relative z-10 flex-shrink-0" strokeWidth={isActive ? 2.5 : 2} />
-                  <span className="hidden lg:block text-[15px] font-semibold relative z-10 truncate">
+                  <span className="hidden lg:block text-[0.9375rem] font-semibold relative z-10 truncate">
                     {item.label}
                   </span>
                 </button>
@@ -119,7 +119,7 @@ const AppShell = () => {
                 )}
              </div>
              <div className="hidden lg:block flex-1 overflow-hidden">
-                <p className="text-[15px] font-semibold text-[#1D1D1F] dark:text-white truncate">
+                <p className="text-[0.9375rem] font-semibold text-[#1D1D1F] dark:text-white truncate">
                   {user?.name || 'Focus User'}
                 </p>
              </div>
@@ -132,19 +132,19 @@ const AppShell = () => {
             className="btn-destructive-lock profile-card w-12 h-12 lg:w-full lg:h-[50px] flex items-center justify-center lg:justify-start gap-3 lg:px-4 transition-all font-bold focus:outline-none rounded-xl lg:rounded-2xl flex-shrink-0"
           >
             <LogOut size={20} strokeWidth={2.5} className="flex-shrink-0" />
-            <span className="hidden lg:block text-[15px] truncate">Sign Out</span>
+            <span className="hidden lg:block text-[0.9375rem] truncate">Sign Out</span>
           </motion.button>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
-        <header className="md:hidden sticky top-0 z-50 h-[64px] flex items-center justify-between px-5 sm:px-8 bg-white/80 dark:bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-black/5 dark:border-[#2C2C2E] transition-colors duration-300">
+        <header className="md:hidden sticky top-0 z-50 h-[4rem] flex items-center justify-between px-5 sm:px-8 bg-white/80 dark:bg-[#0A0A0B]/80 backdrop-blur-xl border-b border-black/5 dark:border-[#2C2C2E] transition-colors duration-300">
           <div className="flex items-center gap-3 cursor-pointer group shrink-0" onClick={() => navigate('/')}>
             <div className="bento-icon-box bg-gradient-to-br from-[#007AFF] to-[#0051A8] shadow-lg shadow-apple-blue/20 !border-none shrink-0">
               <CheckCircle2 size={20} color="white" strokeWidth={2.5} />
             </div>
-            <span className="block font-bold text-[17px] sm:text-[19px] tracking-tight text-[#1D1D1F] dark:text-white truncate max-w-[120px] sm:max-w-none">Focus</span>
+            <span className="block font-bold text-[1.0625rem] sm:text-[1.1875rem] tracking-tight text-[#1D1D1F] dark:text-white truncate max-w-[7.5rem] sm:max-w-none">Focus</span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
@@ -200,12 +200,12 @@ const AppShell = () => {
         </header>
 
         {/* Main Content Area - Fluid Spacing */}
-        <main className="flex-1 w-full max-w-[1400px] mx-auto px-5 sm:px-8 pb-32 md:pb-12 pt-6 md:pt-8">
+        <main className="flex-1 w-full max-w-[87.5rem] mx-auto px-5 sm:px-8 pb-32 md:pb-12 pt-6 md:pt-8">
           <Outlet />
         </main>
 
         {/* Bottom Navigation */}
-        <nav className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-[420px] h-[72px] bg-white dark:bg-[#1C1C1E] backdrop-blur-xl border border-white/20 dark:border-[#2C2C2E] rounded-[24px] p-2 flex items-center justify-around shadow-[0_15px_40px_rgba(0,0,0,0.12)] transition-colors duration-300">
+        <nav className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-[26.25rem] h-[4.5rem] bg-white dark:bg-[#1C1C1E] backdrop-blur-xl border border-white/20 dark:border-[#2C2C2E] rounded-[24px] p-2 flex items-center justify-around shadow-[0_15px_40px_rgba(0,0,0,0.12)] transition-colors duration-300">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -231,7 +231,7 @@ const AppShell = () => {
                   className={`transition-colors duration-300 relative z-10 ${isActive ? 'text-apple-blue dark:text-white' : 'text-[#86868B] dark:text-[#A1A1AA]'}`}
                   strokeWidth={isActive ? 2.5 : 2}
                 />
-                <span className={`text-[10px] font-bold mt-1 transition-colors duration-300 relative z-10 ${isActive ? 'text-apple-blue dark:text-white' : 'text-[#86868B] dark:text-[#A1A1AA]'}`}>
+                <span className={`text-[0.625rem] font-bold mt-1 transition-colors duration-300 relative z-10 ${isActive ? 'text-apple-blue dark:text-white' : 'text-[#86868B] dark:text-[#A1A1AA]'}`}>
                   {item.label}
                 </span>
               </button>

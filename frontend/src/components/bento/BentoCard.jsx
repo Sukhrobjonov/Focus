@@ -9,8 +9,6 @@ const BentoCard = ({
   animate = true,
   stagger = 0
 }) => {
-  const spanClass = `span-${span}`;
-  const rowClass = `row-${row}`;
 
   return (
     <motion.div
@@ -26,7 +24,7 @@ const BentoCard = ({
         y: -2,
         boxShadow: "0 10px 20px -5px rgba(0, 0, 0, 0.1)",
       }}
-      className={`bento-card cursor-pointer border border-black/5 dark:border-white/5 ${spanClass} ${rowClass} ${className}`}
+      className={`bento-card cursor-pointer border border-black/5 dark:border-white/5 ${className}`}
       style={{
         transition: "background-color 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out"
       }}

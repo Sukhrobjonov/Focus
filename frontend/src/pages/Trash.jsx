@@ -72,7 +72,7 @@ const SwipeableTrashItem = ({ item, onRestore, onDelete, isCompact = false }) =>
   }, [swipedDir]);
 
   return (
-    <div className={`relative w-full rounded-2xl overflow-hidden bg-transparent ${isCompact ? 'h-[60px]' : 'min-h-[64px]'}`}>
+    <div className={`relative w-full rounded-2xl overflow-hidden bg-transparent ${isCompact ? 'h-[3.75rem]' : 'min-h-[4rem]'}`}>
       
       {/* Background Actions: Bento-Block Layer */}
       {!isDesktop && (
@@ -111,7 +111,7 @@ const SwipeableTrashItem = ({ item, onRestore, onDelete, isCompact = false }) =>
         animate={controls}
         style={{ x }}
         transition={{ type: "spring", stiffness: 500, damping: 35 }}
-        className={`relative z-10 flex items-center justify-between ${isCompact ? 'py-2' : 'py-3'} px-4 w-full ${isCompact ? 'h-[60px]' : 'min-h-[64px]'} border select-none transition-colors duration-200 ${
+        className={`relative z-10 flex items-center justify-between ${isCompact ? 'py-2' : 'py-3'} px-4 w-full ${isCompact ? 'h-[3.75rem]' : 'min-h-[4rem]'} border select-none transition-colors duration-200 ${
           isDarkMode 
             ? 'bg-[#1C1C1E] border-white/5 shadow-lg' 
             : 'bg-white border-zinc-200 shadow-sm'
@@ -122,8 +122,8 @@ const SwipeableTrashItem = ({ item, onRestore, onDelete, isCompact = false }) =>
             <Trash2 size={16} className="text-[#86868B] dark:text-[#A1A1AA]" />
           </div>
           <div className="min-w-0 flex flex-col justify-center">
-            <h4 className="text-[15px] font-semibold tracking-tight truncate dark:text-white leading-tight">{item.title}</h4>
-            <p className="text-[10px] text-[#86868B] dark:text-[#A1A1AA] font-medium mt-1 leading-tight">Deleted {new Date(item.deletedAt).toLocaleDateString()}</p>
+            <h4 className="text-[0.9375rem] font-semibold tracking-tight truncate dark:text-white leading-tight">{item.title}</h4>
+            <p className="text-[0.625rem] text-[#86868B] dark:text-[#A1A1AA] font-medium mt-1 leading-tight">Deleted {new Date(item.deletedAt).toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -166,10 +166,10 @@ const Trash = () => {
 
   const [confirmingDelete, setConfirmingDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth < 768 ? 5 : 14);
+  const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth < 768 ? 5 : 10);
 
   useEffect(() => {
-    const handleResize = () => setItemsPerPage(window.innerWidth < 768 ? 5 : 14);
+    const handleResize = () => setItemsPerPage(window.innerWidth < 768 ? 5 : 10);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -249,7 +249,7 @@ const Trash = () => {
          )}
       </header>
 
-      <div className="relative h-[364px] md:h-[516px] overflow-hidden">
+      <div className="relative h-[22.75rem] overflow-hidden">
         {isLoading ? (
           <div className="py-20 text-center">
             <div className="w-10 h-10 border-4 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mx-auto mb-4" />
@@ -290,7 +290,7 @@ const Trash = () => {
               {Array.from({ length: Math.max(0, itemsPerPage - paginatedItems.length) }).map((_, i) => (
                 <div 
                   key={`empty-${i}`} 
-                  className="h-[60px] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
+                  className="h-[3.75rem] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
                 />
               ))}
               </AnimatePresence>
