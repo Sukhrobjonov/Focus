@@ -31,7 +31,12 @@ const updateProfile = async (req, res, next) => {
     const { name, avatar, email, password, currentPassword } = req.body;
     const updateData = {};
 
-    if (name) updateData.name = name;
+    if (name) {
+      if (name.trim().length < 2 || name.trim().length > 50) {
+        return res.status(400).json({ success: false, message: 'Name must be between 2 and 50 characters' });
+      }
+      updateData.name = name.trim();
+    }
     if (email) updateData.email = email;
 
     if (password) {

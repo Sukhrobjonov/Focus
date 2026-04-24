@@ -17,6 +17,8 @@ const Profile = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [shake, setShake] = useState(0);
 
   // Form States
   const [profileData, setProfileData] = useState({
@@ -46,6 +48,8 @@ const Profile = () => {
       });
       setPreviewUrl(getAvatarUrl(user.avatar));
     }
+    // Reset errors when modal changes
+    setFieldErrors({});
   }, [user, activeModal]);
 
   const handleAvatarClick = () => {
@@ -81,14 +85,39 @@ const Profile = () => {
       }
     } else {
       // If in modal, we just keep the file for handleSaveProfile
-      // We'll store it in a temp state or just let the input be read later
       setProfileData(prev => ({ ...prev, avatarFile: file }));
     }
   };
 
+  const validateProfile = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!profileData.firstName.trim()) {
+      errors.firstName = 'First name is required';
+    } else if (profileData.firstName.trim().length < 2) {
+      errors.firstName = 'Name must be at least 2 characters';
+    }
+    
+    if (!user.telegramId && !profileData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (profileData.email && !emailRegex.test(profileData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setShake(prev => prev + 1);
+      return false;
+    }
+    return true;
+  };
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    const fullName = `${profileData.firstName} ${profileData.lastName}`.trim();
+    if (!validateProfile()) return;
+
+    const fullName = `${profileData.firstName} ${profileData.lastName || ''}`.trim();
     
     try {
       setIsUploading(true);
@@ -110,7 +139,8 @@ const Profile = () => {
         triggerSuccess();
       }, 800);
     } catch (err) {
-      console.error('Profile update failed:', err);
+      setFieldErrors({ global: err.response?.data?.message || 'Update failed' });
+      setShake(prev => prev + 1);
       setIsUploading(false);
     }
   };
@@ -124,17 +154,29 @@ const Profile = () => {
       logout();
       navigate('/auth');
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete account');
+      setFieldErrors({ global: err.response?.data?.message || 'Delete failed' });
+      setShake(prev => prev + 1);
       setIsUploading(false);
     }
   };
 
+  const validatePassword = () => {
+    const errors = {};
+    if (user.password && !passwordData.current) errors.current = 'Current password is required';
+    if (!passwordData.new) errors.new = 'New password is required';
+    if (passwordData.new !== passwordData.confirm) errors.confirm = 'Passwords do not match';
+    
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setShake(prev => prev + 1);
+      return false;
+    }
+    return true;
+  };
+
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
-    if (passwordData.new !== passwordData.confirm) {
-        alert("Passwords do not match");
-        return;
-    }
+    if (!validatePassword()) return;
     
     try {
       setIsUploading(true);
@@ -148,13 +190,15 @@ const Profile = () => {
       triggerSuccess();
       setPasswordData({ current: '', new: '', confirm: '' });
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update password');
+      setFieldErrors({ global: err.response?.data?.message || 'Update failed' });
+      setShake(prev => prev + 1);
       setIsUploading(false);
     }
   };
 
   const triggerSuccess = () => {
     setShowSuccess(true);
+    setFieldErrors({});
     setTimeout(() => {
       setShowSuccess(false);
       setActiveModal(null);
@@ -217,6 +261,28 @@ const Profile = () => {
     }
   ];
 
+  const handleInputChange = (modal, field, value) => {
+    let finalValue = value;
+    
+    // Strict character limits in state
+    if (modal === 'profile') {
+      if (field === 'firstName' || field === 'lastName') {
+        finalValue = value.slice(0, 25);
+      } else if (field === 'email') {
+        finalValue = value.slice(0, 50);
+      }
+      setProfileData({ ...profileData, [field]: finalValue });
+    } else {
+      // Password modal or others
+      finalValue = value.slice(0, 50);
+      setPasswordData({ ...passwordData, [field]: finalValue });
+    }
+
+    if (fieldErrors[field]) {
+      setFieldErrors({ ...fieldErrors, [field]: null });
+    }
+  };
+
   const renderModalContent = () => {
     if (showSuccess) {
       return (
@@ -237,7 +303,7 @@ const Profile = () => {
     switch (activeModal) {
       case 'edit-profile':
         return (
-          <form onSubmit={handleSaveProfile} className="space-y-6">
+          <form onSubmit={handleSaveProfile} noValidate className="space-y-6">
             <div className="flex flex-col items-center mb-4">
                <div 
                 onClick={handleAvatarClick}
@@ -272,28 +338,46 @@ const Profile = () => {
                   label="First Name"
                   type="text" 
                   value={profileData.firstName}
-                  onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+                  onChange={(e) => handleInputChange('profile', 'firstName', e.target.value)}
                   placeholder="First Name"
-                  required
+                  error={fieldErrors.firstName}
+                  shake={shake}
+                  maxLength={25}
                 />
                 <Input 
                   label="Last Name"
                   type="text" 
                   value={profileData.lastName}
-                  onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+                  onChange={(e) => handleInputChange('profile', 'lastName', e.target.value)}
                   placeholder="Last Name"
-                  required
+                  error={fieldErrors.lastName}
+                  shake={shake}
+                  maxLength={25}
                 />
               </div>
               <Input 
                 label="Email Address"
                 type="email" 
                 value={profileData.email}
-                onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                onChange={(e) => handleInputChange('profile', 'email', e.target.value)}
                 placeholder="name@apple.com"
+                error={fieldErrors.email}
+                shake={shake}
                 required={!user.telegramId}
-                error={user.telegramId && !user.email ? 'Set an email to log in on other devices.' : null}
               />
+
+              <AnimatePresence>
+                {fieldErrors.global && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-[13px] font-bold text-apple-red text-center"
+                  >
+                    {fieldErrors.global}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="flex gap-4 pt-4">
@@ -321,34 +405,50 @@ const Profile = () => {
         );
       case 'password':
         return (
-          <form onSubmit={handleUpdatePassword} className="space-y-6">
+          <form onSubmit={handleUpdatePassword} noValidate className="space-y-6">
             <div className="space-y-4">
               {user.password && (
                 <Input 
                   label="Current Password"
                   type="password"
                   value={passwordData.current}
-                  onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
+                  onChange={(e) => handleInputChange('password', 'current', e.target.value)}
                   placeholder="••••••••"
-                  required
+                  error={fieldErrors.current}
+                  shake={shake}
                 />
               )}
               <Input 
                 label={user.password ? 'New Password' : 'Set Password'}
                 type="password"
                 value={passwordData.new}
-                onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
+                onChange={(e) => handleInputChange('password', 'new', e.target.value)}
                 placeholder="••••••••"
-                required
+                error={fieldErrors.new}
+                shake={shake}
               />
               <Input 
                 label={`Confirm ${user.password ? 'New ' : ''}Password`}
                 type="password"
                 value={passwordData.confirm}
-                onChange={(e) => setPasswordData({...passwordData, confirm: e.target.value})}
+                onChange={(e) => handleInputChange('password', 'confirm', e.target.value)}
                 placeholder="••••••••"
-                required
+                error={fieldErrors.confirm}
+                shake={shake}
               />
+
+              <AnimatePresence>
+                {fieldErrors.global && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-[13px] font-bold text-apple-red text-center"
+                  >
+                    {fieldErrors.global}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="flex gap-4 pt-4">
@@ -484,12 +584,16 @@ const Profile = () => {
           </AnimatePresence>
         </div>
 
-        <div className="flex-1 min-w-0 w-full overflow-hidden">
-          <h2 className="text-xl sm:text-2xl font-bold dark:text-white leading-tight truncate">{user?.name || 'Focus User'}</h2>
-          <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium text-xs sm:text-base mt-0.5 truncate">{user?.email || (user?.telegramId ? 'Telegram User (Email not set)' : 'admin@focus.app')}</p>
+        <div className="flex-1 min-w-0 w-full">
+          <h2 className="text-lg sm:text-2xl font-bold dark:text-white leading-tight break-words">{user?.name || 'Focus User'}</h2>
+          <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium text-xs sm:text-base mt-1 break-all">{user?.email || (user?.telegramId ? 'Telegram User (Email not set)' : 'admin@focus.app')}</p>
         </div>
-        <div className="bg-apple-blue/10 text-apple-blue px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[0.6875rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest shadow-sm shrink-0 mt-2 sm:mt-0">
-          Premium
+        <div className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[0.6875rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest shadow-sm shrink-0 mt-2 sm:mt-0 ${
+          user?.isPremium 
+            ? 'bg-apple-blue/10 text-apple-blue' 
+            : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'
+        }`}>
+          {user?.isPremium ? 'Premium' : 'Basic'}
         </div>
       </section>
 

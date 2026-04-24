@@ -23,6 +23,7 @@ model User {
   password         String?  // Hashed, optional for Telegram users
   telegramId       String?  @unique
   avatar           String?
+  isPremium        Boolean  @default(false)
   
   // Rate Limiting Logic
   taskCount24h     Int      @default(0)

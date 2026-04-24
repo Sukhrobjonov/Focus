@@ -2,15 +2,35 @@ import React, { useEffect } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
 import { CheckCircle2, Pencil, Trash2, Calendar } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 const TaskCard = ({ task, onToggle, onEdit, onTrash, isCompact = false }) => {
   const { theme } = useAuthStore();
   const isDarkMode = theme === 'dark';
+  const queryClient = useQueryClient();
   
   const controls = useAnimation();
   const x = useMotionValue(0);
   const [isDesktop, setIsDesktop] = React.useState(false);
   const [swipedDir, setSwipedDir] = React.useState(0); // 0: none, 1: edit (right), -1: trash (left)
+
+  // Silent Background Sync (Alternative to Sockets)
+  // Refreshes the list when a completed task is old enough to be in trash
+  useEffect(() => {
+    if (task.isCompleted && task.completedAt) {
+      const msIn24h = 24 * 60 * 60 * 1000;
+      const diff = Date.now() - new Date(task.completedAt).getTime();
+      const delay = msIn24h - diff;
+
+      if (delay > 0) {
+        const timer = setTimeout(() => {
+          queryClient.invalidateQueries(['tasks']);
+          queryClient.invalidateQueries(['stats']);
+        }, delay + 5000); // 5s buffer for backend cron
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [task.isCompleted, task.completedAt, queryClient]);
 
   // Desktop Detection
   useEffect(() => {

@@ -74,26 +74,26 @@
     justify-content: center !important;
     border-radius: 16px !important; /* rounded-2xl approximation for 44px */
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border: 1px solid rgba(0, 0, 0, 0.05) !important;
-    background-color: rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: rgba(0, 0, 0, 0.05);
     flex-shrink: 0 !important;
     overflow: hidden !important;
 }
 
 [data-theme='dark'] .bento-icon-box,
 .dark .bento-icon-box {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .bento-icon-box:hover {
-    background-color: rgba(0, 0, 0, 0.08) !important;
+    background-color: rgba(0, 0, 0, 0.08);
     transform: scale(1.02);
 }
 
 [data-theme='dark'] .bento-icon-box:hover,
 .dark .bento-icon-box:hover {
-    background-color: rgba(255, 255, 255, 0.15) !important;
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 @tailwind base;
@@ -232,4 +232,113 @@ button.squircle-sync {
 .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+/*  Premium Apple Toast System - Final Version */
+.apple-toast-container {
+    position: fixed !important;
+    left: 50% !important;
+    top: 0 !important;
+    transform: translateX(-50%) !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+
+[data-sonner-toast] {
+    --bg-glass: rgba(255, 255, 255, 0.98);
+    --border-glass: rgba(0, 0, 0, 0.05);
+    background: var(--bg-glass) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid var(--border-glass) !important;
+    border-radius: 16px !important;
+    padding: 14px 18px !important;
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-height: 52px !important;
+    width: 100% !important;
+    margin: 20px auto 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 767px) {
+    .apple-toast-container {
+        padding: 0 20px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    [data-sonner-toast] {
+        width: calc(100vw - 40px) !important;
+        margin: 15px auto 0 !important;
+    }
+}
+
+[data-theme='dark'] [data-sonner-toast],
+.dark [data-sonner-toast] {
+    --bg-glass: rgba(28, 28, 30, 0.98);
+    --border-glass: rgba(255, 255, 255, 0.1);
+}
+
+/* Success Icon: Brand Blue + White Check */
+[data-sonner-toast][data-type="success"] [data-icon] {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 8px !important;
+    background-color: #007AFF !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    margin-right: 4px !important;
+    flex-shrink: 0 !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] svg {
+    width: 14px !important;
+    height: 14px !important;
+    color: white !important;
+    stroke-width: 4 !important;
+}
+
+/* Close Button: Red and on the Right */
+[data-sonner-toast] [data-close-button] {
+    left: auto !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: transparent !important;
+    color: #FF3B30 !important;
+    border: none !important;
+    opacity: 0.9 !important;
+    font-size: 18px !important;
+    transition: all 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+    opacity: 1 !important;
+    transform: translateY(-50%) scale(1.15) !important;
+}
+
+/* Text & Alignment */
+[data-sonner-toast] [data-title] {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    color: var(--text-primary) !important;
+    white-space: nowrap !important;
+}
+
+[data-sonner-toast] [data-content] {
+    padding-right: 28px !important; /* Space for the Red X */
+    flex: 1 !important;
 }

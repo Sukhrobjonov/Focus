@@ -11,6 +11,9 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [shake, setShake] = useState(0);
+  
   const setAuth = useAuthStore(state => state.setAuth);
 
   const [formData, setFormData] = useState({
@@ -19,16 +22,42 @@ const Auth = () => {
     password: ''
   });
 
+  const validateForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!isLogin && !formData.name.trim()) errors.name = 'Full name is required';
+    
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.password.trim()) errors.password = 'Password is required';
+    
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setShake(prev => prev + 1);
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setFieldErrors({});
     setError('');
 
+    if (!validateForm()) return;
+
+    setLoading(true);
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const { data } = await api.post(endpoint, formData);
       setAuth(data.data.user, data.data.token);
     } catch (err) {
+      setShake(prev => prev + 1);
       const apiError = err.response?.data;
       if (apiError?.errors) {
         setError(apiError.errors.map(e => e.message).join('. '));
@@ -37,6 +66,13 @@ const Auth = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    if (fieldErrors[field]) {
+      setFieldErrors({ ...fieldErrors, [field]: null });
     }
   };
 
@@ -53,6 +89,7 @@ const Auth = () => {
       const { data } = await api.post('/auth/telegram', { tgUser });
       setAuth(data.data.user, data.data.token);
     } catch (err) {
+      setShake(prev => prev + 1);
       setError(err.response?.data?.message || 'Telegram login failed');
     } finally {
       setLoading(false);
@@ -92,7 +129,7 @@ const Auth = () => {
           </div>
 
           {/* Input Fields */}
-          <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col space-y-2">
             <AnimatePresence mode="wait">
               {!isLogin && (
                 <motion.div
@@ -101,11 +138,13 @@ const Auth = () => {
                   exit={{ opacity: 0, height: 0 }}
                 >
                   <Input 
-                    label="Full Name" 
-                    placeholder="Steve Jobs" 
+                    label="Name" 
+                    placeholder="Steve" 
                     value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    required
+                    onChange={e => handleInputChange('name', e.target.value)}
+                    error={fieldErrors.name}
+                    shake={shake}
+                    maxLength={50}
                   />
                 </motion.div>
               )}
@@ -116,8 +155,9 @@ const Auth = () => {
               type="email" 
               placeholder="name@apple.com" 
               value={formData.email}
-              onChange={e => setFormData({...formData, email: e.target.value})}
-              required
+              onChange={e => handleInputChange('email', e.target.value)}
+              error={fieldErrors.email}
+              shake={shake}
             />
             
             <Input 
@@ -125,20 +165,28 @@ const Auth = () => {
               type="password" 
               placeholder="••••••••" 
               value={formData.password}
-              onChange={e => setFormData({...formData, password: e.target.value})}
-              required
+              onChange={e => handleInputChange('password', e.target.value)}
+              error={fieldErrors.password}
+              shake={shake}
             />
 
-            {error && (
-              <p className="text-[13px] font-semibold text-red-500 text-center animate-shake">
-                {error}
-              </p>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.p 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="text-[13px] font-bold text-red-500 text-center py-2"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
 
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full mt-4 h-[58px] bg-[#007AFF] text-white rounded-2xl font-bold text-[17px] shadow-lg shadow-blue-500/20 hover:bg-[#0071E3] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full h-[58px] bg-[#007AFF] text-white rounded-2xl font-bold text-[17px] shadow-lg shadow-blue-500/20 hover:bg-[#0071E3] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
               {!loading && <ArrowRight size={20} />}

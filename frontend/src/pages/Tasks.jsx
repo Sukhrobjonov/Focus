@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchTasks, updateTask, trashTask } from '../api/tasks';
+import { fetchTasks, updateTask, trashTask, toggleTask } from '../api/tasks';
 import { ListTodo, Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TaskModal from '../components/tasks/TaskModal';
@@ -62,7 +62,7 @@ const Tasks = () => {
   }, [totalPages, currentPage]);
 
   const toggleComplete = useMutation({
-    mutationFn: ({ id, isCompleted }) => updateTask(id, { isCompleted: !isCompleted }),
+    mutationFn: (task) => toggleTask(task.id),
     onSuccess: () => {
       queryClient.invalidateQueries(['tasks']);
       queryClient.invalidateQueries(['stats']);

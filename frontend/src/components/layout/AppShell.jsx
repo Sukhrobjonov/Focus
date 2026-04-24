@@ -119,23 +119,26 @@ const AppShell = () => {
           <motion.div 
             whileHover={{ scale: 1.02, backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' }}
             onClick={() => navigate('/profile')}
-            className="profile-card w-12 h-12 lg:w-full lg:h-[50px] flex items-center justify-center lg:justify-start gap-3 lg:px-4 bg-black/[0.03] dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-sm transition-all cursor-pointer overflow-hidden rounded-[12px] lg:rounded-2xl flex-shrink-0"
+            className="profile-card w-12 h-12 lg:w-full lg:min-h-[50px] lg:h-auto flex items-center justify-center lg:justify-start bg-black/[0.03] dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-sm transition-all cursor-pointer rounded-[12px] lg:rounded-2xl flex-shrink-0 overflow-hidden"
           >
-             <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center bg-black/5 dark:bg-white/10 border border-black/5 dark:border-white/5 aspect-square transition-all duration-200">
+             {/* Avatar: Only visible when sidebar is compact (not lg) */}
+             <div className="lg:hidden w-full h-full flex-shrink-0 flex items-center justify-center transition-all duration-200">
                 {getAvatarUrl(user?.avatar) ? (
                   <img 
                     src={getAvatarUrl(user?.avatar)} 
                     alt="Avatar" 
-                    className="w-full h-full object-cover flex-shrink-0" 
+                    className="w-full h-full object-cover" 
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/20 transition-all duration-200">
-                    <User size={20} strokeWidth={2} className="text-blue-600 dark:text-slate-400 flex-shrink-0" />
+                  <div className="w-full h-full flex items-center justify-center bg-black/5 dark:bg-white/10">
+                    <User size={20} strokeWidth={2} className="text-blue-600 dark:text-slate-400" />
                   </div>
                 )}
              </div>
-             <div className="hidden lg:block flex-1 overflow-hidden">
-                <p className="text-[0.9375rem] font-semibold text-[#1D1D1F] dark:text-white truncate">
+
+             {/* Name: Only visible when sidebar is expanded (lg) */}
+             <div className="hidden lg:block flex-1 px-4 py-2">
+                <p className="text-[0.9375rem] font-bold text-[#1D1D1F] dark:text-white break-words leading-tight text-left">
                   {user?.name || 'Focus User'}
                 </p>
              </div>
@@ -208,20 +211,20 @@ const AppShell = () => {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={handleLogout}
-              className="bento-icon-box focus:outline-none !bg-red-500/10 dark:!bg-red-500/20 !border-red-500/20"
+              className="bento-icon-box focus:outline-none !bg-[#FF3B30] !border-none shadow-lg shadow-[#FF3B30]/20"
             >
-              <LogOut size={20} strokeWidth={2} className="text-red-500" />
+              <LogOut size={20} strokeWidth={2.5} className="text-white" />
             </motion.button>
           </div>
         </header>
 
         {/* Main Content Area - Fluid Spacing */}
-        <main className="flex-1 w-full max-w-[87.5rem] mx-auto px-5 sm:px-8 pb-32 md:pb-12 pt-6 md:pt-8">
+        <main className="flex-1 w-full max-w-[87.5rem] mx-auto px-5 sm:px-8 pb-[5rem] md:pb-12 pt-6 md:pt-8">
           <Outlet />
         </main>
 
-        {/* Bottom Navigation */}
-        <nav className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-[26.25rem] h-[4.5rem] bg-white dark:bg-[#1C1C1E] backdrop-blur-xl border border-white/20 dark:border-[#2C2C2E] rounded-[24px] p-2 flex items-center justify-around shadow-[0_15px_40px_rgba(0,0,0,0.12)] transition-colors duration-300">
+        {/* Bottom Navigation (Redesigned: Fixed Full-Width) */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-[4.25rem] bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-2xl border-t border-black/5 dark:border-[#2C2C2E] flex items-center justify-around px-2 transition-colors duration-300">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -237,7 +240,7 @@ const AppShell = () => {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
-                      className="absolute inset-0 bg-apple-blue/[0.08] dark:bg-white/5 sidebar-link-active"
+                      className="absolute inset-0 bg-apple-blue/[0.05] dark:bg-white/5 rounded-2xl"
                       transition={{ type: 'spring', bounce: 0.3, duration: 0.6 }}
                     />
                   )}
@@ -258,7 +261,7 @@ const AppShell = () => {
         {/* Global Floating Action Button (Mobile) */}
         <motion.button 
           onClick={() => setIsGlobalTaskModalOpen(true)}
-          className="md:hidden fixed bottom-32 right-6 w-14 h-14 bg-apple-blue rounded-[1rem] flex items-center justify-center shadow-[0_8px_30px_rgba(0,122,255,0.3)] z-[100] text-white focus:outline-none"
+          className="md:hidden fixed bottom-[5rem] right-6 w-14 h-14 bg-apple-blue rounded-[1rem] flex items-center justify-center shadow-[0_8px_30px_rgba(0,122,255,0.3)] z-[100] text-white focus:outline-none"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.9 }}
         >

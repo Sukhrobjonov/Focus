@@ -11,6 +11,7 @@ import TelegramOnboarding from './components/ui/TelegramOnboarding';
 
 import { useEffect } from 'react';
 import { Toaster } from 'sonner';
+import { CheckCircle2 } from 'lucide-react';
 
 function App() {
   const { user, initialized, checkAuth, initTheme } = useAuthStore();
@@ -44,7 +45,13 @@ function App() {
 
   return (
     <Router>
-      <Toaster position="top-center" expand={false} richColors closeButton />
+      <Toaster 
+        position="top-center" 
+        expand={false}
+        closeButton
+        theme="system"
+        className="apple-toast-container"
+      />
       <Routes>
         <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
         

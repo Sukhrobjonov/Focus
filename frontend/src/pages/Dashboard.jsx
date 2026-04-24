@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchStats, fetchTasks, updateTask, trashTask } from '../api/tasks';
+import { fetchStats, fetchTasks, updateTask, trashTask, toggleTask } from '../api/tasks';
 import { useAuthStore } from '../store/authStore';
 import BentoGrid from '../components/bento/BentoGrid';
 import BentoCard from '../components/bento/BentoCard';
@@ -75,7 +75,7 @@ const Dashboard = () => {
   }, [totalPages, currentPage]);
 
   const toggleComplete = useMutation({
-    mutationFn: (task) => updateTask(task.id, { isCompleted: !task.isCompleted }),
+    mutationFn: (task) => toggleTask(task.id),
     onSuccess: () => {
       queryClient.invalidateQueries(['tasks']);
       queryClient.invalidateQueries(['stats']);

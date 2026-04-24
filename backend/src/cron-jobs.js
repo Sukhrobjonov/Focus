@@ -14,9 +14,8 @@ const initTaskLifecycle = () => {
     try {
       const now = new Date();
       
-      // 1. Move to Trashbox (isDeleted = true)
-      // Logic: isCompleted = true AND completedAt < (now - 24h) AND isDeleted = false
-      const trashThreshold = new Date(now.getTime() - (process.env.TRASHBOX_AFTER_HOURS || 24) * 60 * 60 * 1000);
+      // 1. Move to Trashbox after 24 HOURS
+      const trashThreshold = new Date(now.getTime() - (process.env.TRASHBOX_AFTER_HOURS || 24) * 60 * 60 * 1000); 
       
       const movedToTrash = await prisma.task.updateMany({
         where: {
@@ -34,8 +33,7 @@ const initTaskLifecycle = () => {
         console.log(`🧹 Moved ${movedToTrash.count} tasks to Trashbox.`);
       }
 
-      // 2. Permanent Delete
-      // Logic: isDeleted = true AND deletedAt < (now - 14 days)
+      // 2. Permanent Delete after 14 DAYS
       const deleteThreshold = new Date(now.getTime() - (process.env.DELETE_AFTER_DAYS || 14) * 24 * 60 * 60 * 1000);
 
       const permanentlyDeleted = await prisma.task.deleteMany({

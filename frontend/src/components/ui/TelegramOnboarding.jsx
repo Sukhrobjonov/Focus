@@ -11,20 +11,12 @@ const TelegramOnboarding = () => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Debug log to see user state
-    console.log('TWA Onboarding Check:', { 
-      hasTelegramId: !!user?.telegramId, 
-      hasEmail: !!user?.email,
-      userId: user?.id 
-    });
-
     if (user?.telegramId && (!user?.email || user.email === '')) {
       const storageKey = `tg_onboarding_shown_${user.id}`;
       const shown = localStorage.getItem(storageKey);
       
       if (!shown && user.id) {
         const timer = setTimeout(() => {
-          console.log('Showing TWA Onboarding Modal');
           setShow(true);
         }, 1000);
         return () => clearTimeout(timer);
