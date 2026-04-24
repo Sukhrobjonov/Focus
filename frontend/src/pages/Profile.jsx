@@ -382,7 +382,7 @@ const Profile = () => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full lg:max-w-[50rem] mx-auto space-y-8 sm:space-y-12 pb-20"
+      className="w-full lg:max-w-[50rem] mx-auto space-y-6 sm:space-y-12 pb-20 px-1 sm:px-0"
     >
       <header className="space-y-2">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight dark:text-white">Settings</h1>
@@ -399,7 +399,7 @@ const Profile = () => {
       />
 
       {/* Profile Container */}
-      <section className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 shadow-sm relative">
+      <section className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-black/5 dark:border-white/5 p-5 sm:p-8 flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-6 shadow-sm relative overflow-visible">
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0">
           <div className="w-full h-full rounded-full overflow-hidden border-4 border-white dark:border-[#1C1C1E] shadow-xl flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
             {user?.avatar ? (
@@ -425,7 +425,7 @@ const Profile = () => {
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-3 w-48 sm:w-56 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-[100] overflow-hidden py-1"
+                className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-3 w-44 sm:w-56 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-[100] overflow-hidden py-1"
               >
                 <button 
                   onClick={handleUploadClick}
@@ -449,9 +449,9 @@ const Profile = () => {
           </AnimatePresence>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl sm:text-3xl font-bold dark:text-white leading-tight truncate">{user?.name || 'Focus User'}</h2>
-          <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium text-base sm:text-lg mt-0.5 truncate">{user?.email || 'premium@focus.app'}</p>
+        <div className="flex-1 min-w-0 w-full">
+          <h2 className="text-xl sm:text-3xl font-bold dark:text-white leading-tight truncate">{user?.name || 'Focus User'}</h2>
+          <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium text-sm sm:text-lg mt-0.5 truncate">{user?.email || 'premium@focus.app'}</p>
         </div>
         <div className="bg-apple-blue/10 text-apple-blue px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[0.6875rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest shadow-sm shrink-0 mt-2 sm:mt-0">
           Premium
