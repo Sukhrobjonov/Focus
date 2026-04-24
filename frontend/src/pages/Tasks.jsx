@@ -118,7 +118,7 @@ const Tasks = () => {
             </div>
             <Button 
                 onClick={() => setIsModalOpen(true)}
-                className="h-[44px] !bg-apple-blue !text-white px-8 shadow-md shadow-apple-blue/20 hover:shadow-lg transition-all duration-300 font-bold text-[15px] border-none whitespace-nowrap flex items-center justify-center gap-2 rounded-xl shrink-0 w-full sm:w-auto"
+                className="h-[44px] !bg-apple-blue !text-white px-8 shadow-md shadow-apple-blue/20 hover:shadow-lg transition-all duration-300 font-bold text-[15px] border-none whitespace-nowrap hidden md:flex items-center justify-center gap-2 rounded-xl shrink-0"
             >
                 <Plus size={20} strokeWidth={3} />
                 <span>New Task</span>

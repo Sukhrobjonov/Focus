@@ -119,11 +119,11 @@ const Dashboard = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-full md:w-auto"
+          className="hidden md:block"
         >
           <Button 
             onClick={() => setIsModalOpen(true)}
-            className="!bg-apple-blue !text-white px-7 h-11 shadow-[0_8px_20px_rgba(0,122,255,0.3)] hover:shadow-[0_8px_25px_rgba(0,122,255,0.45)] transition-all font-bold rounded-xl flex items-center justify-center gap-2 w-full md:w-auto text-[15px]"
+            className="!bg-apple-blue !text-white px-7 h-11 shadow-[0_8px_20px_rgba(0,122,255,0.3)] hover:shadow-[0_8px_25px_rgba(0,122,255,0.45)] transition-all font-bold rounded-xl flex items-center justify-center gap-2 text-[15px]"
           >
             <Plus size={18} strokeWidth={3} />
             <span>New Task</span>
