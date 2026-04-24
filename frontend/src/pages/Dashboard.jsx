@@ -14,8 +14,7 @@ import {
   ChevronLeft, 
   CheckCircle2, 
   Clock, 
-  Zap,
-  TrendingUp
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,7 +25,7 @@ const Dashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [confirmingTrash, setConfirmingTrash] = useState(null);
   const queryClient = useQueryClient();
-  const tasksPerPage = 4;
+  const tasksPerPage = 10;
 
   // 1. Fetch Stats
   const { data: stats } = useQuery({
@@ -101,75 +100,81 @@ const Dashboard = () => {
         >
           <Button 
             onClick={() => setIsModalOpen(true)}
-            className="!bg-apple-blue !text-white px-6 h-11 shadow-lg shadow-apple-blue/20 hover:shadow-apple-blue/40 transition-all font-bold rounded-2xl flex items-center justify-center gap-2 w-full md:w-auto text-[15px]"
+            className="!bg-apple-blue !text-white px-7 h-11 shadow-[0_8px_20px_rgba(0,122,255,0.3)] hover:shadow-[0_8px_25px_rgba(0,122,255,0.45)] transition-all font-bold rounded-xl flex items-center justify-center gap-2 w-full md:w-auto text-[15px]"
           >
             <Plus size={18} strokeWidth={3} />
-            <span>Create Task</span>
+            <span>New Task</span>
           </Button>
         </motion.div>
       </header>
 
       {/* Top Grid: Reduced gap and fixed height h-40 (160px) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Card 1: Completion (col-span-2) - Fixed h-40, Compact padding */}
-        <BentoCard span={2} stagger={0} className={`${cardStyle} p-6 h-40 flex items-center justify-center gap-5`}>
-          <div className="relative w-20 h-20 flex-shrink-0">
-            <svg className="w-full h-full -rotate-90">
-              <circle
-                cx="40"
-                cy="40"
-                r="24"
-                fill="transparent"
-                stroke="currentColor"
-                strokeWidth="6"
-                className="text-apple-blue/10"
+        {/* Card 1: Completion (col-span-2) - High-Fidelity Target Design */}
+        <BentoCard span={2} stagger={0} className="relative overflow-hidden !bg-gradient-to-br !from-[#007AFF] !to-[#0051FF] rounded-[2.5rem] h-48 p-8 flex flex-col justify-between group shadow-xl shadow-blue-500/20" style={{ background: 'linear-gradient(135deg, #007AFF 0%, #0051FF 100%)' }}>
+          {/* Enhanced Concentric Rings Background */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/6 pointer-events-none opacity-20 z-0">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div 
+                key={i}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-white/80"
+                style={{ 
+                  width: `${i * 90}px`, 
+                  height: `${i * 90}px`,
+                  opacity: 1 - (i * 0.15)
+                }}
               />
-              <motion.circle
-                cx="40"
-                cy="40"
-                r="24"
-                fill="transparent"
-                stroke="currentColor"
-                strokeWidth="6"
-                strokeDasharray={2 * Math.PI * 24}
-                initial={{ strokeDashoffset: 2 * Math.PI * 24 }}
-                animate={{ strokeDashoffset: (2 * Math.PI * 24) - (progress / 100) * (2 * Math.PI * 24) }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-                strokeLinecap="round"
-                className="text-apple-blue"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-lg font-black text-apple-blue">{progress}%</span>
+            ))}
+          </div>
+
+          {/* Top Info & Larger Target Icon */}
+          <div className="flex justify-between items-start relative z-10">
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-black text-white/70 uppercase tracking-[0.25em]">Completion Rate</span>
+              <span className="text-6xl font-black text-white tracking-tighter">{progress}%</span>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-xl flex items-center justify-center border border-white/30 shadow-inner">
+              <div className="w-6 h-6 rounded-full border-[2px] border-white flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
+              </div>
             </div>
           </div>
-          <div className="flex flex-col justify-center">
-            <h3 className="text-lg font-bold dark:text-white leading-tight">Completion Rate</h3>
-            <p className="text-[#86868B] dark:text-[#A1A1AA] font-semibold text-sm mt-0.5">
-              {stats?.completedTasks || 0} tasks done
+
+          {/* Bottom Info with Functional Progress Bar */}
+          <div className="relative z-10 w-full">
+            <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden mb-4 backdrop-blur-sm">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="h-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)] rounded-full"
+              />
+            </div>
+            <p className="text-white font-bold text-base tracking-tight">
+              {stats?.completed || 0} tasks done. <span className="text-white/70 font-medium ml-1 opacity-80">Keep the flow!</span>
             </p>
           </div>
         </BentoCard>
 
-        {/* Card 2: High Priority - Fixed h-40, Small icon */}
-        <BentoCard span={1} stagger={1} className={`${cardStyle} p-5 h-40 flex flex-col justify-between`}>
-          <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-            <Zap size={18} className="text-green-500" fill="currentColor" />
+        {/* Card 2: High Priority - Fixed h-48 */}
+        <BentoCard span={1} stagger={1} className={`${cardStyle} p-7 h-48 flex flex-col justify-between`}>
+          <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center">
+            <Zap size={22} className="text-green-500" fill="currentColor" />
           </div>
           <div>
-            <p className="text-3xl font-black dark:text-white leading-none mb-1">{stats?.highPriority || 0}</p>
-            <p className="text-xs font-bold text-[#86868B] dark:text-[#A1A1AA] uppercase tracking-wider">High Priority</p>
+            <p className="text-4xl font-black dark:text-white leading-none mb-2">{stats?.highPriority || 0}</p>
+            <p className="text-[11px] font-black text-[#86868B] dark:text-[#A1A1AA] uppercase tracking-widest">High Priority</p>
           </div>
         </BentoCard>
 
-        {/* Card 3: Pending - Fixed h-40, Small icon */}
-        <BentoCard span={1} stagger={2} className={`${cardStyle} p-5 h-40 flex flex-col justify-between`}>
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-            <Clock size={18} className="text-orange-500" />
+        {/* Card 3: Pending - Fixed h-48 */}
+        <BentoCard span={1} stagger={2} className={`${cardStyle} p-7 h-48 flex flex-col justify-between`}>
+          <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center">
+            <Clock size={22} className="text-orange-500" />
           </div>
           <div>
-            <p className="text-3xl font-black dark:text-white leading-none mb-1">{stats?.pendingTasks || 0}</p>
-            <p className="text-xs font-bold text-[#86868B] dark:text-[#A1A1AA] uppercase tracking-wider">Pending Tasks</p>
+            <p className="text-4xl font-black dark:text-white leading-none mb-2">{stats?.pendingTasks || 0}</p>
+            <p className="text-[11px] font-black text-[#86868B] dark:text-[#A1A1AA] uppercase tracking-widest">Pending Tasks</p>
           </div>
         </BentoCard>
       </div>
@@ -238,12 +243,13 @@ const Dashboard = () => {
               >
                 <ChevronLeft size={18} />
               </button>
-              <div className="flex gap-1 px-2">
+              <div className="flex gap-1.5 px-2">
                 {Array.from({ length: totalPages }).map((_, i) => (
-                  <div 
+                  <button 
                     key={i} 
-                    className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
-                      currentPage === i + 1 ? 'bg-apple-blue w-3' : 'bg-zinc-300 dark:bg-zinc-700'
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`h-1.5 rounded-full transition-all duration-500 focus:outline-none ${
+                      currentPage === i + 1 ? 'bg-apple-blue w-4' : 'bg-zinc-300 dark:bg-zinc-700 w-1.5'
                     }`} 
                   />
                 ))}
