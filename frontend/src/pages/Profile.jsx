@@ -425,23 +425,23 @@ const Profile = () => {
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className="absolute top-full left-0 sm:left-auto sm:right-0 mt-3 w-52 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-[100] overflow-hidden py-1"
+                className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-3 w-48 sm:w-56 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-[100] overflow-hidden py-1"
               >
                 <button 
                   onClick={handleUploadClick}
-                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
+                  className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
                 >
-                  <Camera size={18} className="text-[#007AFF]" />
-                  <span className="text-[0.875rem] font-bold text-[#007AFF]">Upload New Photo</span>
+                  <Camera size={16} className="text-[#007AFF]" />
+                  <span className="text-[13px] sm:text-[14px] font-bold text-[#007AFF]">Upload New Photo</span>
                 </button>
                 
                 {user?.avatar && (
                   <button 
                     onClick={handleRemoveAvatar}
-                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left border-t border-zinc-100 dark:border-white/5"
+                    className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left border-t border-zinc-100 dark:border-white/5"
                   >
-                    <Trash2 size={18} className="text-apple-red" />
-                    <span className="text-[0.875rem] font-bold text-apple-red">Remove Current Photo</span>
+                    <Trash2 size={16} className="text-apple-red" />
+                    <span className="text-[13px] sm:text-[14px] font-bold text-apple-red">Remove Current Photo</span>
                   </button>
                 )}
               </motion.div>
