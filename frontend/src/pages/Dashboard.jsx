@@ -18,8 +18,20 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const pageSlideVariants = {
+  enter: (direction) => ({ x: direction > 0 ? '100%' : '-100%' }),
+  center: { x: 0 },
+  exit: (direction) => ({ x: direction > 0 ? '-100%' : '100%' })
+};
+
 const Dashboard = () => {
   const { user } = useAuthStore();
+  const [direction, setDirection] = useState(0);
+
+  const changePage = (newPage) => {
+    setDirection(newPage > currentPage ? 1 : -1);
+    setCurrentPage(newPage);
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -27,11 +39,11 @@ const Dashboard = () => {
   const queryClient = useQueryClient();
   
   // Dynamic tasks per page
-  const [tasksPerPage, setTasksPerPage] = useState(window.innerWidth < 768 ? 5 : 14);
+  const [tasksPerPage, setTasksPerPage] = useState(window.innerWidth < 768 ? 5 : 10);
 
   useEffect(() => {
     const handleResize = () => {
-      setTasksPerPage(window.innerWidth < 768 ? 5 : 14);
+      setTasksPerPage(window.innerWidth < 768 ? 5 : 10);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -188,21 +200,25 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="relative overflow-hidden h-[340px] md:h-[460px]">
+        <div className="relative h-[348px] overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="w-12 h-12 border-4 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mb-4" />
               <p className="text-[#86868B] font-black tracking-tight">Syncing...</p>
             </div>
           ) : paginatedTasks.length > 0 ? (
-            <motion.div
-              key={currentPage}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start"
-            >
-              {paginatedTasks.map((task) => (
+            <AnimatePresence custom={direction} initial={false}>
+              <motion.div
+                key={currentPage}
+                custom={direction}
+                variants={pageSlideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start absolute inset-x-0 top-0 will-change-transform"
+              >
+                {paginatedTasks.map((task) => (
                 <TaskCard 
                   key={task.id}
                   task={task} 
@@ -220,7 +236,8 @@ const Dashboard = () => {
                   className="h-[60px] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
                 />
               ))}
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
           ) : (
             <div className={`${cardStyle} py-20 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-apple-blue/10`}>
               <div className="w-20 h-20 rounded-full bg-apple-blue/5 flex items-center justify-center mb-6">
@@ -234,10 +251,10 @@ const Dashboard = () => {
 
         {/* Enhanced Pagination Controls - Aligned to Markup */}
         {totalPages > 1 && (
-          <div className="flex flex-col items-center gap-4 mt-0">
+          <div className="flex flex-col items-center gap-4 mt-6">
             <div className="flex items-center gap-2 md:gap-1 bg-white/50 dark:bg-white/5 p-1.5 md:p-1 rounded-2xl backdrop-blur-xl border border-white/10 shadow-sm">
               <button 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                onClick={() => changePage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
               >
@@ -248,7 +265,7 @@ const Dashboard = () => {
                 {Array.from({ length: totalPages }).map((_, i) => (
                   <button
                     key={i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
+                    onClick={() => changePage(i + 1)}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       currentPage === i + 1 
                         ? 'w-6 bg-apple-blue' 
@@ -259,7 +276,7 @@ const Dashboard = () => {
               </div>
 
               <button 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
                 className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
               >

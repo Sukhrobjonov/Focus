@@ -8,7 +8,20 @@ import TaskCard from '../components/tasks/TaskCard';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import Button from '../components/ui/Button';
 
+const pageSlideVariants = {
+  enter: (direction) => ({ x: direction > 0 ? '100%' : '-100%' }),
+  center: { x: 0 },
+  exit: (direction) => ({ x: direction > 0 ? '-100%' : '100%' })
+};
+
 const Tasks = () => {
+  const [direction, setDirection] = useState(0);
+
+  const changePage = (newPage) => {
+    setDirection(newPage > currentPage ? 1 : -1);
+    setCurrentPage(newPage);
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [confirmingTrash, setConfirmingTrash] = useState(null);
@@ -113,22 +126,33 @@ const Tasks = () => {
          </div>
       </header>
 
-      <div className="relative h-[340px] md:h-[460px]">
+      <div className="relative h-[364px] md:h-[516px] overflow-hidden">
         {isLoading ? (
           <div className="py-20 text-center">
             <div className="w-10 h-10 border-4 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mx-auto mb-4" />
             <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium">Syncing focus...</p>
           </div>
         ) : paginatedTasks.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-            <AnimatePresence mode="popLayout">
+          <AnimatePresence custom={direction} initial={false}>
+            <motion.div
+              key={currentPage}
+              custom={direction}
+              variants={pageSlideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start absolute inset-x-0 top-0 will-change-transform"
+            >
+              <AnimatePresence mode="popLayout">
               {paginatedTasks.map((task) => (
                 <motion.div 
                   key={task.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  layout="position"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <TaskCard 
                     task={task} 
@@ -147,8 +171,9 @@ const Tasks = () => {
                   className="h-[60px] rounded-2xl border border-dashed border-zinc-200 dark:border-white/10 opacity-20" 
                 />
               ))}
-            </AnimatePresence>
-          </div>
+              </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
         ) : (
           <div className="py-24 text-center space-y-4">
             <div className="w-20 h-20 rounded-full bg-zinc-100 dark:bg-white/5 flex items-center justify-center mx-auto">
@@ -165,10 +190,10 @@ const Tasks = () => {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex flex-col items-center gap-4 mt-0">
+        <div className="flex flex-col items-center gap-4 mt-6">
           <div className="flex items-center gap-2 md:gap-1 bg-white/50 dark:bg-[#1C1C1E]/80 p-1.5 md:p-1 rounded-2xl backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-lg">
             <button 
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => changePage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
             >
@@ -179,7 +204,7 @@ const Tasks = () => {
               {Array.from({ length: totalPages }).map((_, i) => (
                 <button
                   key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
+                  onClick={() => changePage(i + 1)}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
                     currentPage === i + 1 
                       ? 'w-6 bg-apple-blue' 
@@ -190,7 +215,7 @@ const Tasks = () => {
             </div>
 
             <button 
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
             >

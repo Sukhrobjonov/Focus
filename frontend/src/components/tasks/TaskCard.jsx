@@ -70,7 +70,7 @@ const TaskCard = ({ task, onToggle, onEdit, onTrash, isCompact = false }) => {
   }, [swipedDir]);
 
   return (
-    <div className={`relative w-full rounded-2xl overflow-hidden bg-transparent ${isCompact ? 'min-h-[52px]' : 'min-h-[64px]'}`}>
+    <div className={`relative w-full rounded-2xl overflow-hidden bg-transparent ${isCompact ? 'h-[60px]' : 'min-h-[64px]'}`}>
       
       {/* Background Actions: Bento-Block Layer */}
       {!isDesktop && (
@@ -109,7 +109,7 @@ const TaskCard = ({ task, onToggle, onEdit, onTrash, isCompact = false }) => {
         animate={controls}
         style={{ x }}
         transition={{ type: "spring", stiffness: 500, damping: 35 }}
-        className={`relative z-10 flex items-center justify-between ${isCompact ? 'py-2' : 'py-3'} px-4 w-full ${isCompact ? 'min-h-[52px]' : 'min-h-[64px]'} border select-none transition-colors duration-200 ${
+        className={`relative z-10 flex items-center justify-between ${isCompact ? 'py-2' : 'py-3'} px-4 w-full ${isCompact ? 'h-[60px]' : 'min-h-[64px]'} border select-none transition-colors duration-200 ${
           isDarkMode 
             ? 'bg-[#1C1C1E] border-white/5 shadow-lg' 
             : 'bg-white border-zinc-200 shadow-sm'
