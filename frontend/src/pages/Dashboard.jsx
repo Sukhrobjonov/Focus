@@ -43,6 +43,15 @@ const Dashboard = () => {
   const totalPages = Math.ceil(todayTasks.length / tasksPerPage);
   const paginatedTasks = todayTasks.slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage);
 
+  // 3. Reset page if it's now out of bounds
+  React.useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
   const toggleComplete = useMutation({
     mutationFn: (task) => updateTask(task.id, { isCompleted: !task.isCompleted }),
     onSuccess: () => {
@@ -179,87 +188,117 @@ const Dashboard = () => {
         </BentoCard>
       </div>
 
-      {/* Today Section with balanced gap (space-y-10) and no side padding */}
-      <section className="space-y-4 pt-2">
-        <div className="flex items-center justify-between mb-4">
+      {/* Today Section - Complete Rewrite for Robustness */}
+      <section className="space-y-6 pt-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 relative pl-4">
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-apple-blue rounded-full" />
-            <h2 className="text-xl font-black dark:text-white tracking-tight">Today's Focus</h2>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-apple-blue rounded-full shadow-[0_0_8px_rgba(0,122,255,0.5)]" />
+            <h2 className="text-2xl font-black dark:text-white tracking-tight">Today's Focus</h2>
           </div>
+          {totalPages > 1 && (
+            <div className="hidden md:flex items-center gap-2 text-xs font-bold text-[#86868B] uppercase tracking-widest">
+              Page {currentPage} of {totalPages}
+            </div>
+          )}
         </div>
 
-        {/* Task Grid with strict gaps and symmetrical padding */}
-        <div className="min-h-[320px] py-2">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-10 h-10 border-3 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mb-4" />
-              <p className="text-[#86868B] font-bold">Syncing...</p>
-            </div>
-          ) : paginatedTasks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  key={currentPage}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.4 }}
-                  className="contents"
-                >
-                  {paginatedTasks.map((task) => (
+        {/* Task Grid - Strict 10-element pagination */}
+        <div className="relative min-h-[400px]">
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div 
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex flex-col items-center justify-center py-20"
+              >
+                <div className="w-12 h-12 border-4 border-apple-blue/20 border-t-apple-blue rounded-full animate-spin mb-4" />
+                <p className="text-[#86868B] font-black tracking-tight">Updating Grid...</p>
+              </motion.div>
+            ) : paginatedTasks.length > 0 ? (
+              <motion.div
+                key={`page-${currentPage}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
+                {paginatedTasks.map((task, index) => (
+                  <motion.div
+                    key={task.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                  >
                     <TaskCard 
-                      key={task.id} 
                       task={task} 
                       isCompact={true}
                       onToggle={(t) => toggleComplete.mutate(t)}
                       onEdit={(t) => { setEditingTask(t); setIsModalOpen(true); }}
                       onTrash={(t) => setConfirmingTrash(t)}
                     />
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          ) : (
-            <BentoCard className={`${cardStyle} py-20 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-apple-blue/10`}>
-              <div className="w-16 h-16 rounded-full bg-apple-blue/5 flex items-center justify-center mb-4">
-                <CheckCircle2 size={32} className="text-apple-blue" />
-              </div>
-              <h3 className="text-2xl font-black dark:text-white mb-1">All Clear</h3>
-              <p className="text-[#86868B] dark:text-[#A1A1AA] text-base max-w-[280px] font-medium leading-snug">
-                You're all caught up. Take a breath.
-              </p>
-            </BentoCard>
-          )}
+                  </motion.div>
+                ))}
+                {/* Visual placeholders for empty slots to maintain grid stability */}
+                {Array.from({ length: Math.max(0, tasksPerPage - paginatedTasks.length) }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-[74px] rounded-2xl border-2 border-dashed border-zinc-100 dark:border-white/5 opacity-30 hidden md:block" />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`${cardStyle} py-20 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-apple-blue/10`}
+              >
+                <div className="w-20 h-20 rounded-full bg-apple-blue/5 flex items-center justify-center mb-6">
+                  <CheckCircle2 size={40} className="text-apple-blue" />
+                </div>
+                <h3 className="text-3xl font-black dark:text-white mb-2 tracking-tight">All Tasks Completed</h3>
+                <p className="text-[#86868B] dark:text-[#A1A1AA] text-lg max-w-[320px] font-medium leading-snug">
+                  You've mastered today's goals. Enjoy the clarity.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Bottom Pagination for Symmetry */}
+        {/* Enhanced Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 pt-6">
-            <div className="flex items-center gap-1.5 bg-white/50 dark:bg-white/5 p-1 rounded-xl backdrop-blur-md">
+          <div className="flex flex-col items-center gap-4 pt-8">
+            <div className="flex items-center gap-2 bg-white/50 dark:bg-white/5 p-2 rounded-2xl backdrop-blur-xl border border-white/10 shadow-lg">
               <button 
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
+                className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-10 transition-all text-[#1D1D1F] dark:text-white active:scale-95"
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft size={24} strokeWidth={2.5} />
               </button>
-              <div className="flex gap-1.5 px-2">
+              
+              <div className="flex items-center gap-1 px-2">
                 {Array.from({ length: totalPages }).map((_, i) => (
                   <button 
-                    key={i} 
+                    key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`h-1.5 rounded-full transition-all duration-500 focus:outline-none ${
-                      currentPage === i + 1 ? 'bg-apple-blue w-4' : 'bg-zinc-300 dark:bg-zinc-700 w-1.5'
-                    }`} 
-                  />
+                    className="p-2 transition-all hover:scale-110 active:scale-90"
+                  >
+                    <div className={`h-2 rounded-full transition-all duration-300 ${
+                      currentPage === i + 1 
+                        ? 'bg-apple-blue w-8 shadow-[0_0_8px_rgba(0,122,255,0.4)]' 
+                        : 'bg-zinc-300 dark:bg-zinc-800 w-2'
+                    }`} />
+                  </button>
                 ))}
               </div>
+
               <button 
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all focus:outline-none"
+                className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-10 transition-all text-[#1D1D1F] dark:text-white active:scale-95"
               >
-                <ChevronRight size={18} />
+                <ChevronRight size={24} strokeWidth={2.5} />
               </button>
             </div>
           </div>
