@@ -13,7 +13,7 @@ const register = async ({ name, email, password }) => {
   const hashed = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
     data: { name, email, password: hashed },
-    select: { id: true, name: true, email: true, avatar: true, createdAt: true },
+    select: { id: true, telegramId: true, name: true, email: true, avatar: true, createdAt: true },
   });
 
   const token = signToken({ id: user.id, email: user.email });
@@ -44,8 +44,35 @@ const updateUser = async (id, data) => {
   return await prisma.user.update({
     where: { id },
     data,
-    select: { id: true, name: true, email: true, avatar: true, updatedAt: true }
+    select: { id: true, telegramId: true, name: true, email: true, avatar: true, updatedAt: true }
   });
 };
 
-module.exports = { register, login, updateUser };
+const telegramLogin = async (tgUser) => {
+  let user = await prisma.user.findUnique({
+    where: { telegramId: String(tgUser.id) },
+    select: { id: true, telegramId: true, name: true, email: true, avatar: true, createdAt: true },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        telegramId: String(tgUser.id),
+        name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim(),
+        avatar: tgUser.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${tgUser.id}`,
+      },
+      select: { id: true, telegramId: true, name: true, email: true, avatar: true, createdAt: true },
+    });
+  }
+
+  const token = signToken({ id: user.id, email: user.email });
+  return { user, token };
+};
+
+const deleteUser = async (userId) => {
+  return await prisma.user.delete({
+    where: { id: userId },
+  });
+};
+
+module.exports = { register, login, updateUser, telegramLogin, deleteUser };

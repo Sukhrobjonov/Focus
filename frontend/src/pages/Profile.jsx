@@ -5,7 +5,9 @@ import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
 import { getAvatarUrl } from '../utils/avatarHelper';
-import { updateProfile } from '../api/user';
+import { updateProfile, deleteAccount } from '../api/user';
+import Input from '../components/ui/Input';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Profile = () => {
   const { user, logout, theme, toggleTheme, setUser } = useAuthStore();
@@ -20,6 +22,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState({
     firstName: '',
     lastName: '',
+    email: '',
     avatarUrl: ''
   });
 
@@ -38,6 +41,7 @@ const Profile = () => {
       setProfileData({
         firstName: names[0] || '',
         lastName: names.slice(1).join(' ') || '',
+        email: user.email || '',
         avatarUrl: user.avatar || ''
       });
       setPreviewUrl(getAvatarUrl(user.avatar));
@@ -90,6 +94,9 @@ const Profile = () => {
       setIsUploading(true);
       const formData = new FormData();
       formData.append('name', fullName);
+      if (profileData.email) {
+        formData.append('email', profileData.email);
+      }
       
       if (profileData.avatarFile) {
         formData.append('avatar', profileData.avatarFile);
@@ -108,13 +115,42 @@ const Profile = () => {
     }
   };
 
-  const handleUpdatePassword = (e) => {
+  const handleDeleteAccount = async () => {
+    try {
+      setIsUploading(true);
+      const userId = user.id;
+      await deleteAccount();
+      localStorage.removeItem(`tg_onboarding_shown_${userId}`);
+      logout();
+      navigate('/auth');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete account');
+      setIsUploading(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
     if (passwordData.new !== passwordData.confirm) {
         alert("Passwords do not match");
         return;
     }
-    triggerSuccess();
+    
+    try {
+      setIsUploading(true);
+      const updatedUser = await updateProfile({
+        password: passwordData.new,
+        currentPassword: passwordData.current
+      });
+      
+      setUser(updatedUser);
+      setIsUploading(false);
+      triggerSuccess();
+      setPasswordData({ current: '', new: '', confirm: '' });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update password');
+      setIsUploading(false);
+    }
   };
 
   const triggerSuccess = () => {
@@ -232,29 +268,32 @@ const Profile = () => {
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">First Name</label>
-                  <input 
-                    type="text" 
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
-                    className="dark-modal-input w-full h-12 rounded-2xl px-4 focus:ring-2 focus:ring-apple-blue/20 outline-none transition-all focus:outline-none"
-                    placeholder="First Name"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Last Name</label>
-                  <input 
-                    type="text" 
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
-                    className="dark-modal-input w-full h-12 rounded-2xl px-4 focus:ring-2 focus:ring-apple-blue/20 outline-none transition-all focus:outline-none"
-                    placeholder="Last Name"
-                    required
-                  />
-                </div>
+                <Input 
+                  label="First Name"
+                  type="text" 
+                  value={profileData.firstName}
+                  onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+                  placeholder="First Name"
+                  required
+                />
+                <Input 
+                  label="Last Name"
+                  type="text" 
+                  value={profileData.lastName}
+                  onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+                  placeholder="Last Name"
+                  required
+                />
               </div>
+              <Input 
+                label="Email Address"
+                type="email" 
+                value={profileData.email}
+                onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                placeholder="name@apple.com"
+                required={!user.telegramId}
+                error={user.telegramId && !user.email ? 'Set an email to log in on other devices.' : null}
+              />
             </div>
 
             <div className="flex gap-4 pt-4">
@@ -284,39 +323,32 @@ const Profile = () => {
         return (
           <form onSubmit={handleUpdatePassword} className="space-y-6">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Current Password</label>
-                <input 
-                  type="password" 
+              {user.password && (
+                <Input 
+                  label="Current Password"
+                  type="password"
                   value={passwordData.current}
                   onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
-                  className="dark-modal-input w-full h-12 rounded-2xl px-4 focus:ring-2 focus:ring-apple-blue/20 outline-none transition-all focus:outline-none"
                   placeholder="••••••••"
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">New Password</label>
-                <input 
-                  type="password" 
-                  value={passwordData.new}
-                  onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
-                  className="dark-modal-input w-full h-12 rounded-2xl px-4 focus:ring-2 focus:ring-apple-blue/20 outline-none transition-all focus:outline-none"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[0.6875rem] font-bold text-[#86868B] dark:text-white/40 uppercase tracking-widest px-1">Confirm New Password</label>
-                <input 
-                  type="password" 
-                  value={passwordData.confirm}
-                  onChange={(e) => setPasswordData({...passwordData, confirm: e.target.value})}
-                  className="dark-modal-input w-full h-12 rounded-2xl px-4 focus:ring-2 focus:ring-apple-blue/20 outline-none transition-all focus:outline-none"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
+              )}
+              <Input 
+                label={user.password ? 'New Password' : 'Set Password'}
+                type="password"
+                value={passwordData.new}
+                onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
+                placeholder="••••••••"
+                required
+              />
+              <Input 
+                label={`Confirm ${user.password ? 'New ' : ''}Password`}
+                type="password"
+                value={passwordData.confirm}
+                onChange={(e) => setPasswordData({...passwordData, confirm: e.target.value})}
+                placeholder="••••••••"
+                required
+              />
             </div>
 
             <div className="flex gap-4 pt-4">
@@ -358,8 +390,11 @@ const Profile = () => {
               <motion.button 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="btn-destructive-lock w-full h-12 rounded-2xl font-bold transition-all focus:outline-none"
+                onClick={handleDeleteAccount}
+                disabled={isUploading}
+                className="btn-destructive-lock w-full h-12 rounded-2xl font-bold transition-all focus:outline-none flex items-center justify-center gap-2"
               >
+                {isUploading ? <Loader2 size={18} className="animate-spin" /> : null}
                 Yes, Delete Everything
               </motion.button>
               <motion.button 
@@ -451,7 +486,7 @@ const Profile = () => {
 
         <div className="flex-1 min-w-0 w-full overflow-hidden">
           <h2 className="text-xl sm:text-2xl font-bold dark:text-white leading-tight truncate">{user?.name || 'Focus User'}</h2>
-          <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium text-xs sm:text-base mt-0.5 truncate">{user?.email || 'admin@focus.app'}</p>
+          <p className="text-[#86868B] dark:text-[#A1A1AA] font-medium text-xs sm:text-base mt-0.5 truncate">{user?.email || (user?.telegramId ? 'Telegram User (Email not set)' : 'admin@focus.app')}</p>
         </div>
         <div className="bg-apple-blue/10 text-apple-blue px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-[0.6875rem] sm:text-[0.8125rem] font-bold uppercase tracking-widest shadow-sm shrink-0 mt-2 sm:mt-0">
           Premium

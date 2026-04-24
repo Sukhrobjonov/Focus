@@ -18,9 +18,10 @@ datasource db {
 
 model User {
   id               String   @id @default(cuid())
-  email            String   @unique
+  email            String?  @unique
   name             String?
-  password         String   // Hashed
+  password         String?  // Hashed, optional for Telegram users
+  telegramId       String?  @unique
   avatar           String?
   
   // Rate Limiting Logic

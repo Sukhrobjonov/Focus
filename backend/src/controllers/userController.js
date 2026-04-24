@@ -28,10 +28,28 @@ const getMe = async (req, res) => {
 const updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { name, avatar } = req.body;
+    const { name, avatar, email, password, currentPassword } = req.body;
     const updateData = {};
 
     if (name) updateData.name = name;
+    if (email) updateData.email = email;
+
+    if (password) {
+      // If user has a password, they MUST provide currentPassword
+      if (req.user.password) {
+        if (!currentPassword) {
+          return res.status(400).json({ success: false, message: 'Current password is required to set a new one' });
+        }
+        const bcrypt = require('bcryptjs');
+        const isMatch = await bcrypt.compare(currentPassword, req.user.password);
+        if (!isMatch) {
+          return res.status(401).json({ success: false, message: 'Incorrect current password' });
+        }
+      }
+      
+      const bcrypt = require('bcryptjs');
+      updateData.password = await bcrypt.hash(password, 12);
+    }
     
     // Handle Avatar Logic (New Upload or Deletion)
     if (req.file || avatar === '' || avatar === null) {
@@ -62,4 +80,27 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe, updateProfile };
+const telegramLogin = async (req, res, next) => {
+  try {
+    const { tgUser } = req.body;
+    if (!tgUser) {
+      return res.status(400).json({ success: false, message: 'Telegram user data missing' });
+    }
+    const result = await authService.telegramLogin(tgUser);
+    success(res, result, 'Telegram login successful');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    await authService.deleteUser(userId);
+    success(res, null, 'Account deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, getMe, updateProfile, telegramLogin, deleteProfile };

@@ -19,3 +19,7 @@ export const fetchMe = async () => {
   const response = await api.get('/auth/me');
   return response.data.data.user;
 };
+export const deleteAccount = async () => {
+  const response = await api.delete('/auth/profile');
+  return response.data;
+};

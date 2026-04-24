@@ -10,19 +10,35 @@ const crypto = require('crypto');
 const validateTelegramInitData = (initData) => {
   if (!initData || !process.env.TELEGRAM_BOT_TOKEN) return false;
 
-  const urlParams = new URLSearchParams(initData);
-  const hash = urlParams.get('hash');
-  urlParams.delete('hash');
-  
-  const dataCheckString = Array.from(urlParams.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n');
+  try {
+    const urlParams = new URLSearchParams(initData);
+    const hash = urlParams.get('hash');
+    if (!hash) return false;
 
-  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(process.env.TELEGRAM_BOT_TOKEN).digest();
-  const calculatedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+    // Create a list of keys and sort them alphabetically
+    const keys = Array.from(urlParams.keys())
+      .filter(key => key !== 'hash')
+      .sort();
 
-  return calculatedHash === hash;
+    // Construct the data-check-string by joining key=value pairs with newlines
+    // URLSearchParams.get() automatically decodes values
+    const dataCheckString = keys
+      .map(key => `${key}=${urlParams.get(key)}`)
+      .join('\n');
+
+    const secretKey = crypto.createHmac('sha256', 'WebAppData')
+      .update(process.env.TELEGRAM_BOT_TOKEN)
+      .digest();
+      
+    const calculatedHash = crypto.createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+
+    return calculatedHash === hash;
+  } catch (err) {
+    console.error('Telegram validation error:', err);
+    return false;
+  }
 };
 
 const authMiddleware = async (req, res, next) => {
@@ -35,8 +51,33 @@ const authMiddleware = async (req, res, next) => {
       if (!validateTelegramInitData(telegramInitData)) {
         return unauthorized(res, 'Invalid Telegram session');
       }
-      // In a real TWA, we'd extract the user from initData and find/create them in DB
-      // For now, we'll continue to JWT if provided, or handle TWA user mapping here
+      
+      const urlParams = new URLSearchParams(telegramInitData);
+      const tgUser = JSON.parse(urlParams.get('user'));
+      
+      if (tgUser && tgUser.id) {
+        let user = await prisma.user.findUnique({
+          where: { telegramId: String(tgUser.id) },
+          select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, taskCount24h: true, lastTaskReset: true },
+        });
+
+        if (!user) {
+          // Auto-register Telegram user
+          user = await prisma.user.create({
+            data: {
+              telegramId: String(tgUser.id),
+              name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim(),
+              avatar: tgUser.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${tgUser.id}`,
+              // Generate a dummy email for unique constraint if needed, 
+              // but we made it optional in schema
+            },
+            select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, taskCount24h: true, lastTaskReset: true },
+          });
+        }
+
+        req.user = user;
+        return next(); // Successfully authenticated via Telegram
+      }
     }
 
     // 2. Standard JWT Auth
@@ -49,7 +90,7 @@ const authMiddleware = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, email: true, name: true, avatar: true, taskCount24h: true, lastTaskReset: true },
+      select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, taskCount24h: true, lastTaskReset: true },
     });
 
     if (!user) return unauthorized(res, 'User no longer exists');

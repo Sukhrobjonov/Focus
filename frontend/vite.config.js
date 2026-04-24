@@ -7,6 +7,10 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: [
+      'bullring-showoff-cargo.ngrok-free.dev',
+      '.ngrok-free.dev'
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

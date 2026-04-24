@@ -12,7 +12,7 @@ const Input = ({ label, error, type = 'text', className = '', ...props }) => {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       {label && (
-        <label className="text-[13px] font-semibold text-[#86868B] ml-1 tracking-tight">
+        <label className="text-[13px] font-semibold text-[#86868B] dark:text-[#A1A1AA] ml-1 tracking-tight">
           {label}
         </label>
       )}
@@ -21,11 +21,11 @@ const Input = ({ label, error, type = 'text', className = '', ...props }) => {
         <input
           type={isPassword ? (showPassword ? 'text' : 'password') : type}
           className={`
-            w-full bg-[#F5F5F7]/50 border border-black/5 rounded-2xl px-4 py-3.5 text-[15px]
-            placeholder:text-[#86868B]/50 text-[#1D1D1F]
+            w-full bg-[#F5F5F7]/50 dark:bg-white/[0.03] border border-black/5 dark:border-white/5 rounded-2xl px-4 py-3.5 text-[15px]
+            placeholder:text-[#86868B]/50 dark:placeholder:text-[#A1A1AA]/30 text-[#1D1D1F] dark:text-white
             transition-all duration-200
-            focus:outline-none focus:bg-white focus:border-[#007AFF]/30 focus:ring-4 focus:ring-[#007AFF]/5
-            group-hover:border-black/10
+            focus:outline-none focus:bg-white dark:focus:bg-white/[0.08] focus:border-[#007AFF]/30 dark:focus:border-[#007AFF]/50 focus:ring-4 focus:ring-[#007AFF]/5 dark:focus:ring-[#007AFF]/10
+            group-hover:border-black/10 dark:group-hover:border-white/10 dark:group-hover:bg-white/[0.05]
           `}
           {...props}
         />

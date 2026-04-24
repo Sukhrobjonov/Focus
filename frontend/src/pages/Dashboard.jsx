@@ -181,7 +181,7 @@ const Dashboard = () => {
             <Clock size={22} className="text-orange-500" />
           </div>
           <div>
-            <p className="text-4xl font-black dark:text-white leading-none mb-2">{stats?.pendingTasks || 0}</p>
+            <p className="text-4xl font-black dark:text-white leading-none mb-2">{stats?.pending || 0}</p>
             <p className="text-[11px] font-black text-[#86868B] dark:text-[#A1A1AA] uppercase tracking-widest">Pending Tasks</p>
           </div>
         </BentoCard>

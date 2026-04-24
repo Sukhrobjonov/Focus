@@ -224,3 +224,12 @@ button.squircle-sync {
     font-size: 24px; /* 50% scale up */
   }
 }
+
+/* Hide Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

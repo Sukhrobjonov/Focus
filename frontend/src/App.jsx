@@ -7,6 +7,7 @@ import Trash from './pages/Trash';
 import NotFound from './pages/NotFound';
 import AppShell from './components/layout/AppShell';
 import { useAuthStore } from './store/authStore';
+import TelegramOnboarding from './components/ui/TelegramOnboarding';
 
 import { useEffect } from 'react';
 import { Toaster } from 'sonner';
@@ -56,6 +57,8 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      
+      {user && <TelegramOnboarding />}
     </Router>
   );
 }

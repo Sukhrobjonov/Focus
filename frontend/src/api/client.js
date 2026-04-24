@@ -8,12 +8,19 @@ const api = axios.create({
   },
 });
 
-// Interceptor to add JWT token to requests
+// Interceptor to add JWT token and Telegram headers to requests
 api.interceptors.request.use((config) => {
+  // 1. Add JWT Token
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // 2. Add Telegram Init Data (if in TWA)
+  if (window.Telegram?.WebApp?.initData) {
+    config.headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+  }
+
   return config;
 });
 

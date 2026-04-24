@@ -13,6 +13,20 @@ const AppShell = () => {
   const location = useLocation();
   const [isGlobalTaskModalOpen, setIsGlobalTaskModalOpen] = useState(false);
 
+  // Hide scrollbar on specific pages
+  React.useEffect(() => {
+    const isNoScrollPage = ['/', '/profile'].includes(location.pathname);
+    if (isNoScrollPage) {
+      document.documentElement.classList.add('no-scrollbar');
+    } else {
+      document.documentElement.classList.remove('no-scrollbar');
+    }
+    
+    return () => {
+      document.documentElement.classList.remove('no-scrollbar');
+    };
+  }, [location.pathname]);
+
   const handleLogout = () => {
     logout();
     navigate('/auth');
