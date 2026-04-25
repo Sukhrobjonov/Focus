@@ -139,9 +139,9 @@ const confirmDeletion = async (req, res, next) => {
 
 const verifyEmail = async (req, res, next) => {
   try {
-    const { user } = await authService.verifyEmail(req.body);
+    const { user, token } = await authService.verifyEmail(req.body);
     const { password, ...safeUser } = user;
-    success(res, { user: { ...safeUser, hasPassword: !!password } }, 'Email verified successfully');
+    success(res, { user: { ...safeUser, hasPassword: !!password }, token }, 'Email verified successfully');
   } catch (err) {
     next(err);
   }
