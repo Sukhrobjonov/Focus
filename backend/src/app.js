@@ -9,6 +9,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const userRoutes = require('./routes/userRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { initTaskLifecycle } = require('./cron-jobs');
+require('./bot'); // Initialize Telegram Bot
 
 const app = express();
 
