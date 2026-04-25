@@ -307,10 +307,25 @@ const resetPassword = async ({ email, code, newPassword }) => {
 
   return { success: true };
 };
-const requestPasswordChange = async (userId) => {
+const requestPasswordChange = async (userId, currentPassword) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
   if (!user.email) throw new Error('Email is required for password change verification');
+
+  // If user has a password, verify currentPassword first
+  if (user.password) {
+    if (!currentPassword) {
+      const err = new Error('Current password is required');
+      err.statusCode = 400;
+      throw err;
+    }
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      const err = new Error('Incorrect current password');
+      err.statusCode = 401;
+      throw err;
+    }
+  }
 
   const code = generateCode();
   const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins

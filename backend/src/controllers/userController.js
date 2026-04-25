@@ -152,7 +152,8 @@ const performPasswordReset = async (req, res, next) => {
 const requestPasswordChange = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const result = await authService.requestPasswordChange(userId);
+    const { currentPassword } = req.body;
+    const result = await authService.requestPasswordChange(userId, currentPassword);
     success(res, result, 'Verification code sent to your email');
   } catch (err) {
     next(err);

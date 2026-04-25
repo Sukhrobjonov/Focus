@@ -322,7 +322,9 @@ const Profile = () => {
     
     try {
       setIsUploading(true);
-      await api.post('/users/request-password-change');
+      await api.post('/users/request-password-change', {
+        currentPassword: passwordData.current
+      });
       setPasswordStep('verify');
       setIsUploading(false);
     } catch (err) {
@@ -635,6 +637,17 @@ const Profile = () => {
                   className="space-y-6"
                 >
                   <div className="space-y-4">
+                    {user.hasPassword && (
+                      <Input 
+                        label="Current Password"
+                        type="password"
+                        value={passwordData.current}
+                        onChange={(e) => handleInputChange('password', 'current', e.target.value)}
+                        placeholder="••••••••"
+                        error={fieldErrors.current}
+                        shake={shake}
+                      />
+                    )}
                     <Input 
                       label={user.hasPassword ? 'New Password' : 'Set Password'}
                       type="password"
