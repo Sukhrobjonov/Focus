@@ -1,6 +1,10 @@
 const { Telegraf, Markup } = require('telegraf');
+const token = process.env.TELEGRAM_TOKEN;
+if (!token) {
+  console.error('❌ TELEGRAM_TOKEN is missing in environment variables!');
+}
 
-const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
+const bot = new Telegraf(token);
 
 const WEB_APP_URL = 'https://focus-delta-ten.vercel.app';
 
@@ -9,7 +13,15 @@ const escapeMarkdown = (text) => {
   return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
 };
 
+bot.use(async (ctx, next) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📩 Bot received message: ${ctx.message?.text || 'non-text'}`);
+  }
+  return next();
+});
+
 bot.start((ctx) => {
+  console.log('✅ /start command received');
   const welcomeMessage = 
     `Welcome to *Focus*\\. 🕊️\n\n` +
     `Your journey to a more organized and intentional life starts here\\. Focus is more than just a to\\-do list — it's your personal sanctuary for productivity\\.\n\n` +
@@ -25,7 +37,7 @@ bot.start((ctx) => {
     Markup.inlineKeyboard([
       [Markup.button.webApp('Launch Focus', WEB_APP_URL)]
     ])
-  );
+  ).catch(err => console.error('❌ Error replying to /start:', err.message));
 });
 
 bot.command('app', (ctx) => {
