@@ -91,9 +91,8 @@ const Profile = () => {
 
         const updatedUser = await updateProfile(formData);
         
-        // Brief delay for premium feel
         setTimeout(() => {
-          setUser(updatedUser);
+          setUser(updatedUser.user);
           setIsUploading(false);
           triggerSuccess();
         }, 600);
@@ -159,7 +158,7 @@ const Profile = () => {
         setIsUploading(false);
       } else {
         setTimeout(() => {
-          setUser(updatedUser);
+          setUser(updatedUser.user);
           setIsUploading(false);
           triggerSuccess();
         }, 800);

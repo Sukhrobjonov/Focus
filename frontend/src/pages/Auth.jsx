@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import api from '../api/client';
 import BentoCard from '../components/bento/BentoCard';
@@ -24,6 +25,7 @@ const Auth = () => {
   const [resetData, setResetData] = useState({ email: '', code: '', newPassword: '' });
   
   const setAuth = useAuthStore(state => state.setAuth);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -83,6 +85,7 @@ const Auth = () => {
         setIsVerifying(true);
       } else {
         setAuth(data.data.user, data.data.token);
+        navigate('/');
       }
     } catch (err) {
       setShake(prev => prev + 1);
@@ -117,6 +120,7 @@ const Auth = () => {
         code: otp 
       });
       setAuth(data.data.user, data.data.token);
+      navigate('/');
     } catch (err) {
       setShake(prev => prev + 1);
       setError(err.response?.data?.message || 'Verification failed');
