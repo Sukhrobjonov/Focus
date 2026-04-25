@@ -392,12 +392,14 @@ const Profile = () => {
       // Sending null/empty string to clear avatar
       const updatedUser = await updateProfile({ avatar: '' });
       
-      setUser(updatedUser);
-      setPreviewUrl(null);
-      setProfileData(prev => ({ ...prev, avatarUrl: '', avatarFile: null }));
-      setShowAvatarMenu(false);
-      setIsUploading(false);
-      triggerSuccess();
+      setTimeout(() => {
+        setUser(updatedUser.user);
+        setPreviewUrl(null);
+        setProfileData(prev => ({ ...prev, avatarUrl: '', avatarFile: null }));
+        setShowAvatarMenu(false);
+        setIsUploading(false);
+        triggerSuccess();
+      }, 600);
     } catch (err) {
       console.error('Failed to remove avatar:', err);
       setIsUploading(false);
