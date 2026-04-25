@@ -42,33 +42,7 @@ const updateProfile = async (req, res, next) => {
     if (email) updateData.email = email;
 
     if (password) {
-      // 1. Minimum length
-      if (password.length < 8) {
-        return res.status(400).json({ success: false, message: 'New password must be at least 8 characters' });
-      }
-      // 2. Complexity
-      const hasUpper = /[A-Z]/.test(password);
-      const hasLower = /[a-z]/.test(password);
-      const hasDigit = /[0-9]/.test(password);
-      
-      if (!hasUpper || !hasLower || !hasDigit) {
-        return res.status(400).json({ success: false, message: 'Password must contain uppercase, lowercase and number' });
-      }
-
-      // If user has a password, they MUST provide currentPassword
-      if (req.user.password) {
-        if (!currentPassword) {
-          return res.status(400).json({ success: false, message: 'Current password is required to set a new one' });
-        }
-        const bcrypt = require('bcryptjs');
-        const isMatch = await bcrypt.compare(currentPassword, req.user.password);
-        if (!isMatch) {
-          return res.status(401).json({ success: false, message: 'Incorrect current password' });
-        }
-      }
-      
-      const bcrypt = require('bcryptjs');
-      updateData.password = await bcrypt.hash(password, 12);
+      return res.status(400).json({ success: false, message: 'Please use the dedicated Change Password option' });
     }
     
     // Handle Avatar Logic (New Upload or Deletion)
@@ -175,6 +149,27 @@ const performPasswordReset = async (req, res, next) => {
     next(err);
   }
 };
+const requestPasswordChange = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await authService.requestPasswordChange(userId);
+    success(res, result, 'Verification code sent to your email');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const confirmPasswordChange = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { code, newPassword } = req.body;
+    const { user } = await authService.confirmPasswordChange(userId, { code, newPassword });
+    const { password, ...safeUser } = user;
+    success(res, { user: { ...safeUser, hasPassword: !!password } }, 'Password updated successfully');
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = { 
   register, 
@@ -187,5 +182,7 @@ module.exports = {
   verifyEmail, 
   resendCode,
   requestResetPassword,
-  performPasswordReset
+  performPasswordReset,
+  requestPasswordChange,
+  confirmPasswordChange
 };

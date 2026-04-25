@@ -26,6 +26,10 @@ const Profile = () => {
   const [deletionOtp, setDeletionOtp] = useState('');
   const [deletionForm, setDeletionForm] = useState({ email: '', password: '' });
 
+  // Password Change States
+  const [passwordStep, setPasswordStep] = useState('input'); // 'input', 'verify'
+  const [passwordOtp, setPasswordOtp] = useState('');
+
   // Form States
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -318,15 +322,36 @@ const Profile = () => {
     
     try {
       setIsUploading(true);
-      const { user: updatedUser } = await updateProfile({
-        password: passwordData.new,
-        currentPassword: passwordData.current
+      await api.post('/users/request-password-change');
+      setPasswordStep('verify');
+      setIsUploading(false);
+    } catch (err) {
+      setFieldErrors({ global: err.response?.data?.message || 'Failed to request password change' });
+      setShake(prev => prev + 1);
+      setIsUploading(false);
+    }
+  };
+
+  const handleConfirmPasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwordOtp.length !== 6) {
+      setShake(prev => prev + 1);
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const { data } = await api.post('/users/confirm-password-change', {
+        code: passwordOtp,
+        newPassword: passwordData.new
       });
       
-      setUser(updatedUser);
+      setUser(data.data.user);
       setIsUploading(false);
       triggerSuccess();
       setPasswordData({ current: '', new: '', confirm: '' });
+      setPasswordOtp('');
+      setPasswordStep('input');
     } catch (err) {
       setFieldErrors({ global: err.response?.data?.message || 'Update failed' });
       setShake(prev => prev + 1);
@@ -597,72 +622,117 @@ const Profile = () => {
         );
       case 'password':
         return (
-          <form onSubmit={handleUpdatePassword} noValidate className="space-y-6">
-            <div className="space-y-4">
-              {user.hasPassword && (
-                <Input 
-                  label="Current Password"
-                  type="password"
-                  value={passwordData.current}
-                  onChange={(e) => handleInputChange('password', 'current', e.target.value)}
-                  placeholder="••••••••"
-                  error={fieldErrors.current}
-                  shake={shake}
-                />
+          <div className="space-y-6">
+            <AnimatePresence mode="wait">
+              {passwordStep === 'input' ? (
+                <motion.form 
+                  key="pass-input"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  onSubmit={handleUpdatePassword} 
+                  noValidate 
+                  className="space-y-6"
+                >
+                  <div className="space-y-4">
+                    <Input 
+                      label={user.hasPassword ? 'New Password' : 'Set Password'}
+                      type="password"
+                      value={passwordData.new}
+                      onChange={(e) => handleInputChange('password', 'new', e.target.value)}
+                      placeholder="••••••••"
+                      error={fieldErrors.new}
+                      shake={shake}
+                    />
+                    <Input 
+                      label={`Confirm ${user.hasPassword ? 'New ' : ''}Password`}
+                      type="password"
+                      value={passwordData.confirm}
+                      onChange={(e) => handleInputChange('password', 'confirm', e.target.value)}
+                      placeholder="••••••••"
+                      error={fieldErrors.confirm}
+                      shake={shake}
+                    />
+                    {fieldErrors.global && <p className="text-[13px] font-bold text-apple-red text-center">{fieldErrors.global}</p>}
+                  </div>
+
+                  <div className="flex gap-4 pt-4">
+                    <motion.button 
+                      type="button" 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setActiveModal(null)}
+                      className="dark-modal-btn-secondary flex-1 h-12 rounded-2xl font-bold transition-all focus:outline-none"
+                    >
+                      Cancel
+                    </motion.button>
+                    <motion.button 
+                      type="submit" 
+                      disabled={isUploading}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="dark-modal-btn-primary flex-1 h-12 rounded-2xl font-bold transition-all focus:outline-none flex items-center justify-center gap-2"
+                    >
+                      {isUploading && <Loader2 size={18} className="animate-spin" />}
+                      Change Password
+                    </motion.button>
+                  </div>
+                </motion.form>
+              ) : (
+                <motion.div 
+                  key="pass-verify"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 bg-apple-green/10 rounded-full flex items-center justify-center">
+                      <Shield size={32} className="text-apple-green" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-xl font-bold text-[#1D1D1F] dark:text-white">Verify Your Identity</h3>
+                      <p className="text-[#86868B] dark:text-[#A1A1AA] text-[14px]">
+                        We've sent a code to <br />
+                        <span className="font-bold text-[#1D1D1F] dark:text-white">{user.email}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <form onSubmit={handleConfirmPasswordChange} className="space-y-6">
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        maxLength={6}
+                        value={passwordOtp}
+                        onChange={(e) => setPasswordOtp(e.target.value.replace(/\D/g, ''))}
+                        className="w-full h-14 bg-black/5 dark:bg-white/5 border-2 border-transparent rounded-2xl text-center text-2xl font-black tracking-[0.5em] focus:outline-none focus:border-apple-blue/50 transition-all"
+                        placeholder="000000"
+                        autoFocus
+                      />
+                    </div>
+                    {fieldErrors.global && <p className="text-[13px] font-bold text-apple-red text-center">{fieldErrors.global}</p>}
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        type="submit"
+                        disabled={isUploading || passwordOtp.length !== 6}
+                        className="w-full h-12 bg-apple-blue text-white rounded-2xl font-bold shadow-lg shadow-apple-blue/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {isUploading && <Loader2 size={18} className="animate-spin" />}
+                        Verify & Update
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setPasswordStep('input')}
+                        className="text-[14px] font-semibold text-zinc-500 hover:text-zinc-700"
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
               )}
-              <Input 
-                label={user.hasPassword ? 'New Password' : 'Set Password'}
-                type="password"
-                value={passwordData.new}
-                onChange={(e) => handleInputChange('password', 'new', e.target.value)}
-                placeholder="••••••••"
-                error={fieldErrors.new}
-                shake={shake}
-              />
-              <Input 
-                label={`Confirm ${user.hasPassword ? 'New ' : ''}Password`}
-                type="password"
-                value={passwordData.confirm}
-                onChange={(e) => handleInputChange('password', 'confirm', e.target.value)}
-                placeholder="••••••••"
-                error={fieldErrors.confirm}
-                shake={shake}
-              />
-
-              <AnimatePresence>
-                {fieldErrors.global && (
-                  <motion.p 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="text-[13px] font-bold text-apple-red text-center"
-                  >
-                    {fieldErrors.global}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="flex gap-4 pt-4">
-              <motion.button 
-                type="button" 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveModal(null)}
-                className="dark-modal-btn-secondary flex-1 h-12 rounded-2xl font-bold transition-all focus:outline-none"
-              >
-                Cancel
-              </motion.button>
-              <motion.button 
-                type="submit" 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="dark-modal-btn-primary flex-1 h-12 rounded-2xl font-bold transition-all focus:outline-none"
-              >
-                Update Password
-              </motion.button>
-            </div>
-          </form>
+            </AnimatePresence>
+          </div>
         );
       case 'delete-account':
         return (

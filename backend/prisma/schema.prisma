@@ -31,6 +31,8 @@ model User {
   deletionCodeExpires     DateTime?
   resetPasswordCode       String?
   resetPasswordExpires    DateTime?
+  changePasswordCode      String?
+  changePasswordCodeExpires DateTime?
   
   // Rate Limiting Logic
   taskCount24h     Int      @default(0)

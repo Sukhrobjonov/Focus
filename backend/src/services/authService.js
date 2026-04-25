@@ -128,11 +128,10 @@ const login = async ({ email, password }) => {
 };
 
 const updateUser = async (userId, data) => {
-  const { name, email, avatar, password } = data;
+  const { name, email, avatar } = data;
   const currentUser = await prisma.user.findUnique({ where: { id: userId } });
   
   let updateData = { name, avatar };
-  if (password) updateData.password = password; // Hashed password from controller
 
   let verificationNeeded = false;
 
@@ -308,6 +307,60 @@ const resetPassword = async ({ email, code, newPassword }) => {
 
   return { success: true };
 };
+const requestPasswordChange = async (userId) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error('User not found');
+  if (!user.email) throw new Error('Email is required for password change verification');
+
+  const code = generateCode();
+  const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+  
+  await prisma.user.update({
+    where: { id: userId },
+    data: { 
+      changePasswordCode: code,
+      changePasswordCodeExpires: expires
+    }
+  });
+  
+  try {
+    await sendVerificationEmail(user.email, code, 'PASSWORD_CHANGE');
+  } catch (err) {
+    console.error('Failed to send password change email:', err.message);
+  }
+  
+  return { success: true };
+};
+
+const confirmPasswordChange = async (userId, { code, newPassword }) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error('User not found');
+
+  if (user.changePasswordCode !== code) {
+    const err = new Error('Invalid verification code');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (user.changePasswordCodeExpires && new Date() > user.changePasswordCodeExpires) {
+    const err = new Error('Verification code has expired. Please request a new one.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const hashed = await bcrypt.hash(newPassword, 12);
+  
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { 
+      password: hashed,
+      changePasswordCode: null,
+      changePasswordCodeExpires: null
+    }
+  });
+
+  return { user: updatedUser };
+};
 
 module.exports = { 
   register, 
@@ -319,5 +372,7 @@ module.exports = {
   requestDeletionCode,
   confirmDeletion,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  requestPasswordChange,
+  confirmPasswordChange
 };

@@ -26,6 +26,13 @@ const sendVerificationEmail = async (email, code, type = 'VERIFY') => {
       color = '#007AFF'; // Apple Blue
       icon = '🔑';
       break;
+    case 'PASSWORD_CHANGE':
+      subject = 'Confirm Password Change - Focus';
+      title = 'Verify Password Update';
+      body = 'To complete your password update, please enter the 6-digit code below. If you did not initiate this change, please secure your account immediately.';
+      color = '#34C759'; // Apple Green
+      icon = '🛡️';
+      break;
     default:
       subject = 'Verify Your Email - Focus';
       title = 'Welcome to Focus';
