@@ -9,7 +9,9 @@ const prisma = require('./utils/prisma');
 const initTaskLifecycle = () => {
   // Run every hour
   cron.schedule('0 * * * *', async () => {
-    console.log('⏰ Running Task Lifecycle Job...');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('⏰ Running Task Lifecycle Job...');
+    }
 
     try {
       const now = new Date();
@@ -29,7 +31,7 @@ const initTaskLifecycle = () => {
         }
       });
 
-      if (movedToTrash.count > 0) {
+      if (movedToTrash.count > 0 && process.env.NODE_ENV !== 'production') {
         console.log(`🧹 Moved ${movedToTrash.count} tasks to Trashbox.`);
       }
 
@@ -43,7 +45,7 @@ const initTaskLifecycle = () => {
         }
       });
 
-      if (permanentlyDeleted.count > 0) {
+      if (permanentlyDeleted.count > 0 && process.env.NODE_ENV !== 'production') {
         console.log(`🔥 Permanently deleted ${permanentlyDeleted.count} tasks.`);
       }
 
@@ -52,7 +54,9 @@ const initTaskLifecycle = () => {
     }
   });
 
-  console.log('🚀 Task Lifecycle service initialized.');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('🚀 Task Lifecycle service initialized.');
+  }
 };
 
 module.exports = { initTaskLifecycle };

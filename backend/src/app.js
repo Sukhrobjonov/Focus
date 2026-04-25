@@ -23,7 +23,6 @@ const ensureDefaultUser = async () => {
   try {
     const userCount = await prisma.user.count();
     if (userCount === 0) {
-      console.log('👤 No users found. Creating default admin...');
       const hashedPassword = await bcrypt.hash('Focus2026!', 12);
       await prisma.user.create({
         data: {
@@ -33,13 +32,14 @@ const ensureDefaultUser = async () => {
           avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'
         }
       });
-      console.log('✅ Default admin created: admin@focus.app / Focus2026!');
     }
   } catch (err) {
     console.error('⚠️ Could not create default user:', err.message);
   }
 };
-ensureDefaultUser();
+if (process.env.NODE_ENV !== 'production') {
+  ensureDefaultUser();
+}
 
 // ── Security & Parsing ────────────────────────────────────
 app.use(helmet());
@@ -81,7 +81,10 @@ app.use(errorHandler);
 // ── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🍎 Apple Bento To-Do API running on http://0.0.0.0:${PORT}\n`);
+  // Silent startup in production
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🍎 Focus API running on http://0.0.0.0:${PORT}`);
+  }
 });
 
 module.exports = app;

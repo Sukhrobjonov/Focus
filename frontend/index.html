@@ -8,6 +8,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // Silence Telegram SDK logs before they even start
+      (function() {
+        ['log', 'debug', 'info', 'warn'].forEach(function(method) {
+          var originalMethod = console[method];
+          console[method] = function() {
+            if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].indexOf('[Telegram.WebView]') !== -1) return;
+            originalMethod.apply(console, arguments);
+          };
+        });
+      })();
+    </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>

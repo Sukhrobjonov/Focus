@@ -16,7 +16,6 @@ const register = async ({ name, email, password }) => {
   const hashed = await bcrypt.hash(password, 12);
   const code = generateCode();
   const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
-  console.log('📧 Verification Code for', email, 'is:', code, '(Expires at:', expires, ')');
   
   const user = await prisma.user.create({
     data: { 
@@ -79,7 +78,6 @@ const resendCode = async (email) => {
   
   const code = generateCode();
   const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
-  console.log('📧 Resent Verification Code for', email, 'is:', code, '(Expires at:', expires, ')');
   
   await prisma.user.update({
     where: { id: user.id },
@@ -147,8 +145,6 @@ const updateUser = async (userId, data) => {
     updateData.verificationCode = code;
     updateData.verificationCodeExpires = expires;
     verificationNeeded = true;
-
-    console.log('📧 New Verification Code for', email, 'is:', code);
     
     try {
       await sendVerificationEmail(email, code);
@@ -210,16 +206,12 @@ const requestDeletionCode = async ({ email, password, userId }) => {
         deletionCodeExpires: expires
       }
     });
-
-    console.log('🗑️ Deletion Code for', user.email, 'is:', code, '(Expires at:', expires, ')');
     
     try {
       await sendVerificationEmail(user.email, code, 'DELETE'); 
     } catch (err) {
       console.error('Failed to send deletion email:', err.message);
     }
-  } else {
-    console.log('🗑️ Deletion requested for Telegram user', user.telegramId, '(No email, will require "DELETE" confirmation)');
   }
   
   return { success: true, hasEmail: !!user.email };
@@ -277,8 +269,6 @@ const requestPasswordReset = async (email) => {
       resetPasswordExpires: expires
     }
   });
-
-  console.log('🔑 Password Reset Code for', email, 'is:', code, '(Expires at:', expires, ')');
   
   try {
     await sendVerificationEmail(email, code, 'RESET');
