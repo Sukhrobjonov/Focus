@@ -15,7 +15,8 @@ export const getAvatarUrl = (avatar) => {
   }
 
   // 3. Otherwise, construct the local URL with a strict versioning cache buster
-  const BACKEND_URL = 'http://192.168.31.64:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  const BACKEND_URL = API_URL.replace(/\/api$/, '');
   const version = new Date().getTime();
   return `${BACKEND_URL}/uploads/avatars/${avatar}?v=${version}`;
 };
