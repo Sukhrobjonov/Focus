@@ -8,7 +8,8 @@ const crypto = require('crypto');
  * @param {string} initData - The raw initData string from Telegram
  */
 const validateTelegramInitData = (initData) => {
-  if (!initData || !process.env.TELEGRAM_BOT_TOKEN) return false;
+  const token = process.env.TELEGRAM_TOKEN || process.env.BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+  if (!initData || !token) return false;
 
   try {
     const urlParams = new URLSearchParams(initData);
@@ -27,7 +28,7 @@ const validateTelegramInitData = (initData) => {
       .join('\n');
 
     const secretKey = crypto.createHmac('sha256', 'WebAppData')
-      .update(process.env.TELEGRAM_BOT_TOKEN)
+      .update(token)
       .digest();
       
     const calculatedHash = crypto.createHmac('sha256', secretKey)
