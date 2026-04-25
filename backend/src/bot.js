@@ -1,5 +1,5 @@
 const { Telegraf, Markup } = require('telegraf');
-const token = process.env.TELEGRAM_TOKEN || process.env.BOT_TOKEN;
+const token = process.env.TELEGRAM_TOKEN || process.env.BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
 if (!token) {
   console.error('❌ TELEGRAM_TOKEN is missing in environment variables!');
 }
