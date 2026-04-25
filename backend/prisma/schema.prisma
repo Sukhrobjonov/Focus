@@ -1,6 +1,6 @@
 // ============================================================
 // Prisma Schema — Production Apple Bento To-Do (TWA Ready)
-// Database: SQLite
+// Database: PostgreSQL (Neon.tech)
 // ============================================================
 
 generator client {
@@ -8,8 +8,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ────────────────────────────────────────────────────────────
