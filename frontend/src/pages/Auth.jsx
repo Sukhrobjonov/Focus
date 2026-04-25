@@ -160,6 +160,7 @@ const Auth = () => {
       
       const { data } = await api.post('/users/telegram', { tgUser });
       setAuth(data.data.user, data.data.token);
+      navigate('/');
     } catch (err) {
       setShake(prev => prev + 1);
       setError(err.response?.data?.message || 'Telegram login failed');
