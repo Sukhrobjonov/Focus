@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Shield, Palette, Bell, LogOut, ChevronRight, CheckCircle2, AlertCircle, X, Edit2, Lock, Trash2, Camera, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import api from '../api/client';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
 import { getAvatarUrl } from '../utils/avatarHelper';
-import { updateProfile, deleteAccount } from '../api/user';
+import { updateProfile, requestDeletion, confirmDeletion } from '../api/user';
 import Input from '../components/ui/Input';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock as LockIcon, ArrowLeft } from 'lucide-react';
 
 const Profile = () => {
   const { user, logout, theme, toggleTheme, setUser } = useAuthStore();
@@ -19,6 +20,11 @@ const Profile = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [shake, setShake] = useState(0);
+
+  // Deletion States
+  const [deletionStep, setDeletionStep] = useState('confirm'); // 'confirm', 'request', 'verify'
+  const [deletionOtp, setDeletionOtp] = useState('');
+  const [deletionForm, setDeletionForm] = useState({ email: '', password: '' });
 
   // Form States
   const [profileData, setProfileData] = useState({
@@ -36,6 +42,8 @@ const Profile = () => {
 
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  const prevModalRef = useRef(null);
+  
   // Initialize form data when user changes or modal opens
   useEffect(() => {
     if (user && activeModal === 'edit-profile') {
@@ -48,8 +56,18 @@ const Profile = () => {
       });
       setPreviewUrl(getAvatarUrl(user.avatar));
     }
-    // Reset errors when modal changes
+    
+    // Reset deletion state ONLY when the modal is first opened
+    if (activeModal === 'delete-account' && prevModalRef.current !== 'delete-account') {
+      setDeletionStep('confirm');
+      setDeletionOtp('');
+      setDeletionForm({ email: user?.email || '', password: '' });
+    }
+    
+    setIsVerifyingEmail(false);
+    setNewEmailCode('');
     setFieldErrors({});
+    prevModalRef.current = activeModal;
   }, [user, activeModal]);
 
   const handleAvatarClick = () => {
@@ -113,6 +131,9 @@ const Profile = () => {
     return true;
   };
 
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [newEmailCode, setNewEmailCode] = useState('');
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (!validateProfile()) return;
@@ -131,13 +152,18 @@ const Profile = () => {
         formData.append('avatar', profileData.avatarFile);
       }
 
-      const updatedUser = await updateProfile(formData);
+      const { user: updatedUser, verificationNeeded } = await updateProfile(formData);
       
-      setTimeout(() => {
-        setUser(updatedUser);
+      if (verificationNeeded) {
+        setIsVerifyingEmail(true);
         setIsUploading(false);
-        triggerSuccess();
-      }, 800);
+      } else {
+        setTimeout(() => {
+          setUser(updatedUser);
+          setIsUploading(false);
+          triggerSuccess();
+        }, 800);
+      }
     } catch (err) {
       setFieldErrors({ global: err.response?.data?.message || 'Update failed' });
       setShake(prev => prev + 1);
@@ -145,25 +171,138 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
+  const handleVerifyNewEmail = async (e) => {
+    e.preventDefault();
+    if (newEmailCode.length !== 6) {
+      setShake(prev => prev + 1);
+      return;
+    }
+
     try {
       setIsUploading(true);
-      const userId = user.id;
-      await deleteAccount();
-      localStorage.removeItem(`tg_onboarding_shown_${userId}`);
-      logout();
-      navigate('/auth');
+      const { data } = await api.post('/users/verify', { 
+        email: profileData.email, 
+        code: newEmailCode 
+      });
+      setUser(data.data.user);
+      setIsVerifyingEmail(false);
+      setIsUploading(false);
+      triggerSuccess();
     } catch (err) {
-      setFieldErrors({ global: err.response?.data?.message || 'Delete failed' });
+      setFieldErrors({ global: err.response?.data?.message || 'Verification failed' });
       setShake(prev => prev + 1);
       setIsUploading(false);
     }
   };
 
+  const handleRequestDeletion = async (e) => {
+    if (e) e.preventDefault();
+    setFieldErrors({});
+    
+    // If they have an email, validate email/password
+    if (user.email) {
+      if (!deletionForm.email) {
+        setFieldErrors({ email: 'Email is required' });
+        setShake(prev => prev + 1);
+        return;
+      }
+      // Only require password if the user actually has one (non-TG users always have one)
+      if (user.hasPassword && !deletionForm.password) {
+        setFieldErrors({ password: 'Password is required' });
+        setShake(prev => prev + 1);
+        return;
+      }
+    }
+
+    try {
+      setIsUploading(true);
+      const res = await requestDeletion(deletionForm);
+      // Backend returns { success, data: { hasEmail }, message }
+      if (res.data?.hasEmail) {
+        setDeletionStep('verify');
+      } else {
+        // No email, just go to confirm text step
+        setDeletionStep('confirm-text');
+      }
+      setIsUploading(false);
+    } catch (err) {
+      setFieldErrors({ global: err.response?.data?.message || 'Failed to request deletion' });
+      setShake(prev => prev + 1);
+      setIsUploading(false);
+    }
+  };
+
+  const handleConfirmDeletion = async (e) => {
+    if (e) e.preventDefault();
+    
+    // If it's a code, validate length. If it's text, validate string.
+    const isTextStep = deletionStep === 'confirm-text';
+    const val = isTextStep ? deletionOtp : deletionOtp; // both use deletionOtp state for input
+
+    if (!isTextStep && val.length !== 6) {
+      setShake(prev => prev + 1);
+      return;
+    }
+
+    if (isTextStep && val !== 'DELETE') {
+      setFieldErrors({ global: 'Please type DELETE in all caps' });
+      setShake(prev => prev + 1);
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const userId = user.id;
+      await confirmDeletion(val);
+      // Close modal and clean up BEFORE logout to avoid null pointer errors in render
+      setActiveModal(null);
+      setDeletionStep('none');
+      
+      logout();
+      navigate('/auth');
+    } catch (err) {
+      setFieldErrors({ global: err.response?.data?.message || 'Deletion failed' });
+      setShake(prev => prev + 1);
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    // Priority 1: User has an email (with or without password)
+    if (user.email) {
+      setDeletionStep('request');
+      setDeletionForm(prev => ({ ...prev, email: user.email }));
+    } 
+    // Priority 2: User has NO email but HAS a password (e.g. TG user who set a password)
+    else if (user.hasPassword) {
+      setDeletionStep('confirm-password'); // New step for password-only deletion
+    }
+    // Priority 3: User has NO email and NO password (pure TG user)
+    else if (user.telegramId) {
+      handleRequestDeletion();
+    } 
+    else {
+      setDeletionStep('request');
+    }
+  };
+
   const validatePassword = () => {
     const errors = {};
-    if (user.password && !passwordData.current) errors.current = 'Current password is required';
-    if (!passwordData.new) errors.new = 'New password is required';
+    if (user.hasPassword && !passwordData.current) errors.current = 'Current password is required';
+    if (!passwordData.new) {
+      errors.new = 'New password is required';
+    } else if (passwordData.new.length < 8) {
+      errors.new = 'Password must be at least 8 characters';
+    } else {
+      const hasUpper = /[A-Z]/.test(passwordData.new);
+      const hasLower = /[a-z]/.test(passwordData.new);
+      const hasNumber = /[0-9]/.test(passwordData.new);
+      
+      if (!hasUpper || !hasLower || !hasNumber) {
+        errors.new = 'Must contain upper, lower and number';
+      }
+    }
+
     if (passwordData.new !== passwordData.confirm) errors.confirm = 'Passwords do not match';
     
     if (Object.keys(errors).length > 0) {
@@ -180,7 +319,7 @@ const Profile = () => {
     
     try {
       setIsUploading(true);
-      const updatedUser = await updateProfile({
+      const { user: updatedUser } = await updateProfile({
         password: passwordData.new,
         currentPassword: passwordData.current
       });
@@ -300,6 +439,60 @@ const Profile = () => {
       );
     }
 
+    if (isVerifyingEmail) {
+      return (
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col gap-8"
+        >
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-16 h-16 bg-apple-blue/10 rounded-full flex items-center justify-center">
+              <Mail size={32} className="text-apple-blue" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-[#1D1D1F] dark:text-white">Verify New Email</h3>
+              <p className="text-[#86868B] dark:text-[#A1A1AA] text-[14px]">
+                We've sent a code to <br />
+                <span className="font-bold text-[#1D1D1F] dark:text-white">{profileData.email}</span>
+              </p>
+            </div>
+          </div>
+          <form onSubmit={handleVerifyNewEmail} className="space-y-6">
+            <div className="relative">
+              <input 
+                type="text"
+                maxLength={6}
+                value={newEmailCode}
+                onChange={(e) => setNewEmailCode(e.target.value.replace(/\D/g, ''))}
+                className="w-full h-14 bg-black/5 dark:bg-white/5 border-2 border-transparent rounded-2xl text-center text-2xl font-black tracking-[0.5em] focus:outline-none focus:border-apple-blue/50 transition-all"
+                placeholder="000000"
+                autoFocus
+              />
+            </div>
+            {fieldErrors.global && <p className="text-[13px] font-bold text-apple-red text-center">{fieldErrors.global}</p>}
+            <div className="flex flex-col gap-3">
+              <button 
+                type="submit"
+                disabled={isUploading || newEmailCode.length !== 6}
+                className="w-full h-12 bg-apple-blue text-white rounded-2xl font-bold shadow-lg shadow-apple-blue/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isUploading && <Loader2 size={18} className="animate-spin" />}
+                Verify & Save
+              </button>
+              <button 
+                type="button"
+                onClick={() => setIsVerifyingEmail(false)}
+                className="text-[14px] font-semibold text-zinc-500 hover:text-zinc-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      );
+    }
+
     switch (activeModal) {
       case 'edit-profile':
         return (
@@ -407,7 +600,7 @@ const Profile = () => {
         return (
           <form onSubmit={handleUpdatePassword} noValidate className="space-y-6">
             <div className="space-y-4">
-              {user.password && (
+              {user.hasPassword && (
                 <Input 
                   label="Current Password"
                   type="password"
@@ -419,7 +612,7 @@ const Profile = () => {
                 />
               )}
               <Input 
-                label={user.password ? 'New Password' : 'Set Password'}
+                label={user.hasPassword ? 'New Password' : 'Set Password'}
                 type="password"
                 value={passwordData.new}
                 onChange={(e) => handleInputChange('password', 'new', e.target.value)}
@@ -428,7 +621,7 @@ const Profile = () => {
                 shake={shake}
               />
               <Input 
-                label={`Confirm ${user.password ? 'New ' : ''}Password`}
+                label={`Confirm ${user.hasPassword ? 'New ' : ''}Password`}
                 type="password"
                 value={passwordData.confirm}
                 onChange={(e) => handleInputChange('password', 'confirm', e.target.value)}
@@ -475,37 +668,268 @@ const Profile = () => {
       case 'delete-account':
         return (
           <div className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-               <div className="w-16 h-16 bg-apple-red/10 rounded-full flex items-center justify-center">
-                  <AlertCircle size={32} className="text-apple-red" />
-               </div>
-               <div className="text-center">
-                 <p className="text-[#86868B] dark:text-[#A1A1AA] text-[1.0625rem] font-medium leading-relaxed">
-                   This action is permanent and cannot be undone. All your tasks will be lost forever.
-                 </p>
-               </div>
-            </div>
+            <AnimatePresence mode="wait">
+              {deletionStep === 'confirm' && (
+                <motion.div 
+                  key="confirm"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="space-y-6"
+                >
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-16 h-16 bg-apple-red/10 rounded-full flex items-center justify-center">
+                      <AlertCircle size={32} className="text-apple-red" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[#1D1D1F] dark:text-white text-lg font-bold">Are you absolutely sure?</p>
+                      <p className="text-[#86868B] dark:text-[#A1A1AA] text-[15px] font-medium leading-relaxed mt-1">
+                        This action is permanent. All your tasks, settings, and premium status will be lost forever.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleDeleteAccount}
+                      className="btn-destructive-lock w-full h-12 rounded-2xl font-bold transition-all focus:outline-none"
+                    >
+                      Continue to Delete
+                    </motion.button>
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setActiveModal(null)}
+                      className="dark-modal-btn-secondary w-full h-12 rounded-2xl font-bold transition-all focus:outline-none"
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
 
-            <div className="flex flex-col gap-3 pt-4">
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleDeleteAccount}
-                disabled={isUploading}
-                className="btn-destructive-lock w-full h-12 rounded-2xl font-bold transition-all focus:outline-none flex items-center justify-center gap-2"
-              >
-                {isUploading ? <Loader2 size={18} className="animate-spin" /> : null}
-                Yes, Delete Everything
-              </motion.button>
-              <motion.button 
-                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveModal(null)}
-                className="dark-modal-btn-secondary w-full h-12 rounded-2xl font-bold transition-all focus:outline-none"
-              >
-                No, Keep My Account
-              </motion.button>
-            </div>
+              {deletionStep === 'request' && (
+                <motion.div 
+                  key="request"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  <div className="text-center space-y-1">
+                    <p className="text-[#1D1D1F] dark:text-white text-lg font-bold">Verify Identity</p>
+                    <p className="text-[#86868B] dark:text-[#A1A1AA] text-[14px]">Please confirm your credentials to continue.</p>
+                  </div>
+                  <form onSubmit={handleRequestDeletion} className="space-y-4">
+                    <Input 
+                      label="Email"
+                      type="email"
+                      value={deletionForm.email}
+                      onChange={(e) => setDeletionForm({ ...deletionForm, email: e.target.value })}
+                      error={fieldErrors.email}
+                      shake={shake}
+                    />
+                    {user.hasPassword && (
+                      <Input 
+                        label="Password"
+                        type="password"
+                        value={deletionForm.password}
+                        onChange={(e) => setDeletionForm({ ...deletionForm, password: e.target.value })}
+                        error={fieldErrors.password}
+                        shake={shake}
+                      />
+                    )}
+                    {fieldErrors.global && (
+                      <p className="text-[13px] font-bold text-apple-red text-center">{fieldErrors.global}</p>
+                    )}
+                    <div className="flex gap-3 pt-2">
+                      <button 
+                        type="button"
+                        onClick={() => setDeletionStep('confirm')}
+                        className="dark-modal-btn-secondary flex-1 h-12 rounded-2xl font-bold"
+                      >
+                        Back
+                      </button>
+                      <button 
+                        type="submit"
+                        disabled={isUploading}
+                        className="dark-modal-btn-primary flex-1 h-12 rounded-2xl font-bold bg-apple-red hover:bg-red-600 text-white"
+                      >
+                        {isUploading ? <Loader2 size={18} className="animate-spin mx-auto" /> : 'Send Code'}
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+
+              {deletionStep === 'confirm-password' && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="space-y-2 text-center">
+                    <p className="text-[17px] font-semibold text-[#1D1D1F] dark:text-white">Verify Your Password</p>
+                    <p className="text-[13px] text-[#86868B] dark:text-[#A1A1AA] leading-relaxed">
+                      Please enter your account password to confirm permanent deletion.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Input 
+                      label="Password"
+                      type="password"
+                      value={deletionOtp}
+                      onChange={(e) => setDeletionOtp(e.target.value)}
+                      placeholder="Enter your password"
+                      error={fieldErrors.global}
+                      shake={shake}
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button 
+                      type="button"
+                      className="dark-modal-btn-secondary flex-1 h-12 rounded-2xl font-bold"
+                      onClick={() => setDeletionStep('confirm')}
+                      disabled={isUploading}
+                    >
+                      Back
+                    </button>
+                    <button 
+                      type="button"
+                      disabled={isUploading || !deletionOtp}
+                      className="dark-modal-btn-primary flex-1 h-12 rounded-2xl font-bold bg-apple-red hover:bg-red-600 text-white shadow-lg shadow-apple-red/20 disabled:opacity-50"
+                      onClick={handleConfirmDeletion}
+                    >
+                      {isUploading ? <Loader2 size={18} className="animate-spin mx-auto" /> : 'Delete Account'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {deletionStep === 'confirm-text' && (
+                <motion.div 
+                  key="confirm-text"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 bg-apple-red/10 rounded-full flex items-center justify-center">
+                      <Trash2 size={32} className="text-apple-red" />
+                    </div>
+                    <div>
+                      <p className="text-[#1D1D1F] dark:text-white text-lg font-bold">Final Confirmation</p>
+                      <p className="text-[#86868B] dark:text-[#A1A1AA] text-[14px] leading-relaxed">
+                        To permanently delete your account, please type <br />
+                        <span className="font-bold text-apple-red">DELETE</span> below.
+                      </p>
+                    </div>
+                  </div>
+                  <form onSubmit={handleConfirmDeletion} className="space-y-6">
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        value={deletionOtp}
+                        onChange={(e) => setDeletionOtp(e.target.value)}
+                        className={`
+                          w-full h-14 bg-black/5 dark:bg-white/5 border-2 rounded-2xl 
+                          text-center text-xl font-bold tracking-widest
+                          focus:outline-none focus:border-apple-red/50
+                          ${fieldErrors.global ? 'border-apple-red' : 'border-transparent'}
+                          transition-all
+                        `}
+                        placeholder="TYPE HERE"
+                        autoFocus
+                      />
+                      {fieldErrors.global && (
+                        <p className="text-[13px] font-bold text-apple-red text-center mt-3">{fieldErrors.global}</p>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        type="submit"
+                        disabled={isUploading || deletionOtp !== 'DELETE'}
+                        className="w-full h-12 bg-apple-red text-white rounded-2xl font-bold shadow-lg shadow-apple-red/20 disabled:opacity-50"
+                      >
+                        {isUploading ? <Loader2 size={18} className="animate-spin mx-auto" /> : 'Confirm Deletion'}
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setDeletionStep('confirm')}
+                        className="text-[14px] font-semibold text-zinc-500"
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+
+              {deletionStep === 'verify' && (
+                <motion.div 
+                  key="verify"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 bg-apple-blue/10 rounded-full flex items-center justify-center">
+                      <Mail size={32} className="text-apple-blue" />
+                    </div>
+                    <div>
+                      <p className="text-[#1D1D1F] dark:text-white text-lg font-bold">Check your email</p>
+                      <p className="text-[#86868B] dark:text-[#A1A1AA] text-[14px] leading-relaxed">
+                        We've sent a 6-digit deletion code to <br />
+                        <span className="font-bold text-[#1D1D1F] dark:text-white">{deletionForm.email}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <form onSubmit={handleConfirmDeletion} className="space-y-6">
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        maxLength={6}
+                        value={deletionOtp}
+                        onChange={(e) => setDeletionOtp(e.target.value.replace(/\D/g, ''))}
+                        className={`
+                          w-full h-14 bg-black/5 dark:bg-white/5 border-2 rounded-2xl 
+                          text-center text-2xl font-black tracking-[0.5em] pl-4
+                          focus:outline-none focus:border-apple-blue/50
+                          ${fieldErrors.global ? 'border-apple-red' : 'border-transparent'}
+                          transition-all
+                        `}
+                        placeholder="000000"
+                        autoFocus
+                      />
+                      {fieldErrors.global && (
+                        <p className="text-[13px] font-bold text-apple-red text-center mt-3">{fieldErrors.global}</p>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        type="submit"
+                        disabled={isUploading || deletionOtp.length !== 6}
+                        className="w-full h-12 bg-apple-red text-white rounded-2xl font-bold shadow-lg shadow-apple-red/20 disabled:opacity-50"
+                      >
+                        {isUploading ? <Loader2 size={18} className="animate-spin mx-auto" /> : 'Permanently Delete'}
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setDeletionStep('request')}
+                        className="text-[14px] font-semibold text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                      >
+                        Change Details
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       default:

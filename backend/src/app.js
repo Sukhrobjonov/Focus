@@ -67,7 +67,7 @@ app.get('/health', (_req, res) => {
 });
 
 // ── Routes ────────────────────────────────────────────────
-app.use('/api/auth', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 
 // ── 404 ───────────────────────────────────────────────────

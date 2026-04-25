@@ -36,7 +36,7 @@ const TaskModal = ({ isOpen, onClose, task = null }) => {
     },
     onError: (err) => {
       const message = err.response?.data?.message || 'Failed to process task';
-      toast.error('Sync failed', { description: message });
+      toast.error('Action Failed', { description: message });
     }
   });
 

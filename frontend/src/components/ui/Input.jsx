@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Input = ({ label, error, type = 'text', className = '', shake = 0, ...props }) => {
+const Input = ({ label, error, type = 'text', className = '', shake = 0, hideErrorSpace = false, ...props }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
 
@@ -51,20 +51,22 @@ const Input = ({ label, error, type = 'text', className = '', shake = 0, ...prop
         )}
       </motion.div>
 
-      <div className="min-h-[16px]">
-        <AnimatePresence mode="wait">
-          {error && (
-            <motion.span 
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              className="text-[11px] font-bold text-apple-red ml-1 block"
-            >
-              {error}
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
+      {!hideErrorSpace && (
+        <div className="min-h-[16px]">
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.span 
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="text-[11px] font-bold text-apple-red ml-1 block"
+              >
+                {error}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };

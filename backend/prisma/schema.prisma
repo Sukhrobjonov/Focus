@@ -24,6 +24,13 @@ model User {
   telegramId       String?  @unique
   avatar           String?
   isPremium        Boolean  @default(false)
+  isVerified              Boolean   @default(false)
+  verificationCode        String?
+  verificationCodeExpires DateTime?
+  deletionCode            String?
+  deletionCodeExpires     DateTime?
+  resetPasswordCode       String?
+  resetPasswordExpires    DateTime?
   
   // Rate Limiting Logic
   taskCount24h     Int      @default(0)

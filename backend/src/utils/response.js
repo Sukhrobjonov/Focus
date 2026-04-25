@@ -36,4 +36,8 @@ const badRequest = (res, message = 'Bad request', errors = null) => {
   return error(res, message, 400, errors);
 };
 
-module.exports = { success, created, error, notFound, unauthorized, forbidden, badRequest };
+const tooManyRequests = (res, message = 'Too many requests') => {
+  return error(res, message, 429);
+};
+
+module.exports = { success, created, error, notFound, unauthorized, forbidden, badRequest, tooManyRequests };

@@ -58,7 +58,7 @@ const authMiddleware = async (req, res, next) => {
       if (tgUser && tgUser.id) {
         let user = await prisma.user.findUnique({
           where: { telegramId: String(tgUser.id) },
-          select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, taskCount24h: true, lastTaskReset: true },
+          select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, isVerified: true, isPremium: true, taskCount24h: true, lastTaskReset: true },
         });
 
         if (!user) {
@@ -68,10 +68,9 @@ const authMiddleware = async (req, res, next) => {
               telegramId: String(tgUser.id),
               name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim(),
               avatar: tgUser.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${tgUser.id}`,
-              // Generate a dummy email for unique constraint if needed, 
-              // but we made it optional in schema
+              isVerified: true, // Telegram users are verified by default
             },
-            select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, taskCount24h: true, lastTaskReset: true },
+            select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, isVerified: true, isPremium: true, taskCount24h: true, lastTaskReset: true },
           });
         }
 
@@ -90,7 +89,7 @@ const authMiddleware = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, taskCount24h: true, lastTaskReset: true },
+      select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, isVerified: true, isPremium: true, taskCount24h: true, lastTaskReset: true },
     });
 
     if (!user) return unauthorized(res, 'User no longer exists');

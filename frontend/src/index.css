@@ -191,6 +191,28 @@ button.squircle-sync {
   border: 1px solid var(--border-card);
 }
 
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  overflow: hidden;
+  position: relative;
+  padding: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .auth-container {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--border-card);
+    border-radius: 40px;
+    padding: 3rem;
+    box-shadow: var(--apple-shadow);
+  }
+}
+
 /* Apple Glow Effect */
 .sidebar-glow {
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
@@ -287,11 +309,11 @@ button.squircle-sync {
 }
 
 /* Success Icon: Brand Blue + White Check */
-[data-sonner-toast][data-type="success"] [data-icon] {
+[data-sonner-toast][data-type="success"] [data-icon],
+[data-sonner-toast][data-type="error"] [data-icon] {
     width: 24px !important;
     height: 24px !important;
     border-radius: 8px !important;
-    background-color: #007AFF !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -300,7 +322,16 @@ button.squircle-sync {
     flex-shrink: 0 !important;
 }
 
-[data-sonner-toast][data-type="success"] [data-icon] svg {
+[data-sonner-toast][data-type="success"] [data-icon] {
+    background-color: #007AFF !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+    background-color: #FF3B30 !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] svg,
+[data-sonner-toast][data-type="error"] [data-icon] svg {
     width: 14px !important;
     height: 14px !important;
     color: white !important;
@@ -341,4 +372,14 @@ button.squircle-sync {
 [data-sonner-toast] [data-content] {
     padding-right: 28px !important; /* Space for the Red X */
     flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+[data-sonner-toast] [data-description] {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--text-secondary) !important;
+    line-height: 1.4 !important;
 }

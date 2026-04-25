@@ -20,7 +20,7 @@ const Button = ({
     lg: 'px-6 py-3 text-base',
   };
 
-  const baseStyles = 'inline-flex items-center justify-center rounded-full font-medium transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
+  const baseStyles = 'inline-flex items-center justify-center rounded-2xl font-medium transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
 
   // Mapping custom variant names to theme variables
   const variantStyles = {

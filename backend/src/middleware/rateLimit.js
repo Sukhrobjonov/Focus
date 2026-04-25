@@ -28,7 +28,7 @@ const taskRateLimit = async (req, res, next) => {
 
     // Check limit (30 tasks per 24h)
     if (req.user.taskCount24h >= 30) {
-      return tooManyRequests(res, 'Daily task limit reached (30/24h). Please wait until the next reset.');
+      return tooManyRequests(res, 'Daily task limit reached (30 tasks/day)');
     }
 
     next();
