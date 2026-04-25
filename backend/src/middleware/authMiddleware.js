@@ -47,14 +47,42 @@ const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     const telegramInitData = req.headers['x-telegram-init-data'];
 
-    // 1. Support Telegram TWA Auth
+    // 1. Try Standard JWT Auth First (Highest Priority)
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = verifyToken(token);
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.id },
+          select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, isVerified: true, isPremium: true, taskCount24h: true, lastTaskReset: true },
+        });
+
+        if (user) {
+          req.user = user;
+          return next();
+        }
+      } catch (jwtErr) {
+        // If JWT fails but we have Telegram data, let it fall through to Telegram auth
+        if (!telegramInitData) {
+          if (jwtErr.name === 'TokenExpiredError') {
+            return unauthorized(res, 'Token expired — please log in again');
+          }
+          return unauthorized(res, 'Invalid token');
+        }
+      }
+    }
+
+    // 2. Support Telegram TWA Auth (Second Priority)
     if (telegramInitData) {
       if (!validateTelegramInitData(telegramInitData)) {
         return unauthorized(res, 'Invalid Telegram session');
       }
       
       const urlParams = new URLSearchParams(telegramInitData);
-      const tgUser = JSON.parse(urlParams.get('user'));
+      const tgUserRaw = urlParams.get('user');
+      if (!tgUserRaw) return unauthorized(res, 'Telegram user data missing');
+      
+      const tgUser = JSON.parse(tgUserRaw);
       
       if (tgUser && tgUser.id) {
         let user = await prisma.user.findUnique({
@@ -69,39 +97,21 @@ const authMiddleware = async (req, res, next) => {
               telegramId: String(tgUser.id),
               name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim(),
               avatar: tgUser.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${tgUser.id}`,
-              isVerified: true, // Telegram users are verified by default
+              isVerified: true,
             },
             select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, isVerified: true, isPremium: true, taskCount24h: true, lastTaskReset: true },
           });
         }
 
         req.user = user;
-        return next(); // Successfully authenticated via Telegram
+        return next();
       }
     }
 
-    // 2. Standard JWT Auth
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return unauthorized(res, 'No token provided');
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      select: { id: true, telegramId: true, email: true, name: true, avatar: true, password: true, isVerified: true, isPremium: true, taskCount24h: true, lastTaskReset: true },
-    });
-
-    if (!user) return unauthorized(res, 'User no longer exists');
-
-    req.user = user;
-    next();
+    return unauthorized(res, 'Authentication required');
   } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return unauthorized(res, 'Token expired — please log in again');
-    }
-    return unauthorized(res, 'Invalid token');
+    console.error('Auth Middleware Error:', err);
+    return unauthorized(res, 'Authentication failed');
   }
 };
 
